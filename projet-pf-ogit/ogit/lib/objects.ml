@@ -2,10 +2,17 @@ type t =
 | Text of string 
 | Directory of (string * bool * Digest.t * t) list
 
-let hash _obj = failwith "TODO"
+let read_file filename =
+  let ic = open_in_bin filename in
+  let len = in_channel_length ic in
+  let s = really_input_string ic len in
+  close_in ic;
+  s;;
 
-let is_known _h = failwith "TODO"
+let hash _obj = Digest.to_hex (Digest.string (read_file _obj));;
 
+let is_known _h = 
+  
 let read_text_object _h = failwith "TODO"
 
 let store_object _obj = failwith "TODO"
