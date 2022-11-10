@@ -25,7 +25,7 @@ let obj4 = Directory [
 ]
 let () = Format.printf "hash de obj4 : %s@." (Digest.to_hex (hash obj4))
 
-
+(**)
 (* test de is_known *)
 let hash_de_toto_txt = Digest.from_hex "1e423d8532170b358868e1af76688c4a"
 let hash_bidon = Digest.from_hex "2f423d8532170b358868e1af76688c4a"
