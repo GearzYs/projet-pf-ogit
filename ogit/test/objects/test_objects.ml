@@ -38,8 +38,8 @@ let () = Format.printf "is_known %s? %b@." (Digest.to_hex hash_bidon) (is_known 
 let hash_obj4 = store_object obj4 
 let text_obj4 = read_text_object hash_obj4
 let () = Format.printf "@.CONTENU DU FICHIER REPRESENTANT L'OBJET obj4: @.%s@." text_obj4
-let () = Sys.remove (".ogit/objects/" ^ (Digest.to_hex hash_obj4))*)
-
+let () = Sys.remove (".ogit/objects/" ^ (Digest.to_hex hash_obj4))
+*)
 
 
 (* test de store_work_directory et read_directory_object *)
@@ -62,7 +62,7 @@ let () = Format.printf "@.EXECUTION DE LA COMMANDE SHELL rm -f .ogit/objects/*@.
 let _ = Sys.command "rm -f .ogit/objects/*"
 let hash_repo = store_work_directory ()
 let () = Format.printf "@.hash_repo = %s@." (Digest.to_hex hash_repo)
-let () = Format.printf "@.CONTENU DU FICHIER %s:@.%s@." (Digest.to_hex hash_repo) (read_text_object hash_repo)
+let () = Format.printf "@.CONTENU DU FICHIER %s:@.%s@." (Digest.to_hex hash_repo) (read_text_object hash_repo)(*
 let rec pp_object = function
 | Text s -> Format.sprintf "Text(\"%s\")" s
 | Directory(l) -> 
@@ -83,3 +83,4 @@ let () = Format.printf "@.EXECUTION DE LA COMMANDE SHELL tree -a@."
 let _ = Sys.command "tree -a"
 let () = Format.printf "@.EXECUTION DE LA COMMANDE SHELL cat toto.txt@."
 let _ = Sys.command "cat toto.txt"
+*)
