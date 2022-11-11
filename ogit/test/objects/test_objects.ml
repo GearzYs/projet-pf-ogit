@@ -34,11 +34,11 @@ let () = Format.printf "is_known %s? %b@." (Digest.to_hex hash_de_toto_txt) (is_
 let () = Format.printf "is_known %s? %b@." (Digest.to_hex hash_bidon) (is_known hash_bidon)
 
 
-(* test de store_object et read_text_object *)
+(* test de store_object et read_text_object 
 let hash_obj4 = store_object obj4 
 let text_obj4 = read_text_object hash_obj4
 let () = Format.printf "@.CONTENU DU FICHIER REPRESENTANT L'OBJET obj4: @.%s@." text_obj4
-let () = Sys.remove (".ogit/objects/" ^ (Digest.to_hex hash_obj4))
+let () = Sys.remove (".ogit/objects/" ^ (Digest.to_hex hash_obj4))*)
 
 
 
