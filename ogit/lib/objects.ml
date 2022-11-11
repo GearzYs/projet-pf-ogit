@@ -2,7 +2,6 @@ type t =
 | Text of string 
 | Directory of (string * bool * Digest.t * t) list
 
-
 let hashDir _obj =
   match _obj with
     (*Si c'est juste du text on le renvoi dans une liste*)
@@ -18,7 +17,7 @@ let hashDir _obj =
 
 (*Mtn on va juste digest ce que nous a renvoyé la fonction d'avant*)
 let hash _obj = Digest.string (String.concat "\n" (hashDir _obj))
-  
+
 let is_known (_h:Digest.t) = 
   begin
     (*Chemin général a vérif sinon finito*)
@@ -32,7 +31,6 @@ let is_known (_h:Digest.t) =
 let read_text_object _h = 
   begin 
     (*Pour les test je force ocaml a être dans le dossier de test donné par le prof*)
-    Unix.chdir "/home/quentin/Ocaml/projet-pf-ogit/repo/.ogit/objects";
     (*On ouvre le fichier en lecture binaire, je penses que ça peut eviter des soucis avec les accents etc*)
   let ic = open_in_bin (_h) in
   let len = in_channel_length ic in
@@ -41,17 +39,26 @@ let read_text_object _h =
   (*on fini le taff et return la chaine qui correspond a tout le contenue du fichier*)
   s
   end
-  
 
 (*A refaire ça pue sa mère mais l'idée est la*)
 let store_object _obj = match _obj with
   | Text txt -> begin 
-    Unix.chdir "/home/quentin/Ocaml/projet-pf-ogit/.ogit/objects";
-    let err = Sys.command ("touch " ^ (Digest.to_hex(Digest.string txt)) ^ " && cat " ^ txt ^ " > " ^ (Digest.to_hex (Digest.string txt))) in
+    let err = Sys.command ("touch " ^ (Digest.to_hex(hash _obj)) ^ " && echo \"" ^ txt ^ "\" > " ^ (Digest.to_hex (hash _obj))) in
     if err <> 0 then failwith "erreur" else
     Digest.string txt
   end
-  | Directory _ -> failwith "todo"
+  | Directory dir -> match dir with
+    |[] -> begin
+      let tmp = Digest.to_hex (Digest.string "") in
+      let err = Sys.command ("touch " ^ tmp) in
+      if err <> 0 then failwith "erreur" else
+      Digest.string ""
+      end
+    | _ -> begin
+      let err = Sys.command ("touch " ^ Digest.to_hex(hash _obj) ^ " && echo \"" ^ (String.concat "\n" (hashDir _obj)) ^ "\" > " ^ (Digest.to_hex (hash _obj))) in
+      if err <> 0 then failwith "erreur" else
+      hash _obj
+    end;;
   
   (*function
   | Text txt -> begin 
@@ -60,10 +67,19 @@ let store_object _obj = match _obj with
     if err <> 0 then failwith "erreur" else
     Digest.to_hex txt
   end
-  | Directory _ -> failwith "TODO"*)
+  | Directory _ -> failwith "TODO"
+  
+  begin
+    Unix.chdir "/home/quentin/Ocaml/projet-pf-ogit/.ogit/objects";
+    let err = Sys.command ("touch " ^ (Digest.to_hex (hash obj1)) ^ " && echo \"" ^ (String.concat "\n" (hashDir obj1)) ^ "\" > " ^ (Digest.to_hex (hash obj1))) in
+    if err <> 0 then failwith "erreur" else
+    hash obj1
+  end
+  
+  *)
 
 
-let store_work_directory () = failwith "TODO"
+let store_work_directory () = 
 
 let read_directory_object _h = failwith "TODO" 
   
