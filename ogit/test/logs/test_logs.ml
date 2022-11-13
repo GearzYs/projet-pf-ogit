@@ -52,5 +52,7 @@ let commit_bidon = {
 let hash_du_fichier_log = store_commit commit_bidon
 let commit_bidon2 = read_commit hash_du_fichier_log
 
+let () = Format.printf "commit_bidon = commit_bidon2 ? %b@." (commit_bidon = commit_bidon2)
+
 let () = (* on "nettoie" le répertoire .ogit/logs *)
   Sys.remove (".ogit/logs/" ^ (Digest.to_hex hash_du_fichier_log))

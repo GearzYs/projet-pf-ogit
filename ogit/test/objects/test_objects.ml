@@ -4,8 +4,7 @@ open Objects
 
 (* on place le programme dans repo *)
 let repo_root = "../../../../../repo"
-let () = 
-  Sys.chdir repo_root
+let () = Sys.chdir repo_root
 
 (* on prepare le repertoire .ogit *)
 let _ = Sys.command "rm -rf .ogit"
