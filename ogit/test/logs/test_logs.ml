@@ -39,7 +39,6 @@ let () = set_head head_courant (** on remet la tête initiale en place **)
 
 let () = Format.printf "head_bidon = head_bidon2 ? %b@." (head_bidon = head_bidon2)
 
-
 (* test de read_commit et store_commit *)
 
 let hash_bidon = Digest.string "bidon"
@@ -55,5 +54,3 @@ let commit_bidon2 = read_commit hash_du_fichier_log
 
 let () = (* on "nettoie" le répertoire .ogit/logs *)
   Sys.remove (".ogit/logs/" ^ (Digest.to_hex hash_du_fichier_log))
-
-let () = Format.printf "commit_bidon = commit_bidon2 ? %b@." (commit_bidon = commit_bidon2)

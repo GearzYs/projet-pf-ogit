@@ -2,12 +2,17 @@ type t =
 | Text of string 
 | Directory of (string * bool * Digest.t * t) list
 
+(*val obj4 : t =
+  Directory
+   [("obj1", false, ":ۺÑy\031ºã쐈Ė8p", Text "hello, world!");
+    ("obj2", false, *)
+
 let hashDir _obj =
   match _obj with
     (*Si c'est juste du text on le renvoi dans une liste*)
     | Text s -> [s]
     (*si c'est un dir on va le parcourir par récursion et en faire une liste*)
-    | Directory dir -> let rec loop aux = function
+    | Directory dir -> let rec loop aux rest= match rest with
       (*si le dir est vide on renvoi notre liste avec tout les noms bool et hash*)
       | [] -> aux
       (*On force le format main.ml;t;94daecdffe4003a70f02ee8989295b32 et on ajoute tout ça dans une liste par récursion*)
@@ -23,7 +28,7 @@ let is_known (_h:Digest.t) =
   begin
     (*Chemin général a vérif sinon finito*)
     (*Pour les test je force ocaml a être dans le dossier de test donné par le prof*)
-    Unix.chdir ".ogit/objects";
+    Unix.chdir "main/.ogit/objects";
     (*On va vérifier si le fichier existe, on se base sur le nom hash*)
   if Sys.file_exists (Digest.to_hex _h ) then true else false
   end
@@ -40,6 +45,8 @@ let read_text_object _h =
   (*on fini le taff et return la chaine qui correspond a tout le contenue du fichier*)
   s
   end
+
+  
  (*a partir dici on est pas sur que ca marche bien*)
 (*Semble marcher mais a des soucis avec dune a cause du répertoire courant*)
 let store_object _obj = match _obj with
