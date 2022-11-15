@@ -14,14 +14,14 @@ let ogit_init () =
 let is_present file_name = 
   begin
     try 
-      let _ = Sys.file_exists ".ogit/objects/" ^ file_name in true
+      let path = ".ogit/objects/" ^ file_name in
+      Sys.file_exists path
     with Sys_error _ -> false
   end
 
 let ogit_commit _msg = 
   begin
     let dir = Sys.readdir ".";
-    let files = Array.to_list (dir |> Array.map (fun x -> (x, hash x))) in 
     let tmp = ref list;
     for i = 0 to Array.length dir - 1 do
       if not (is_present dir.(i)) then
