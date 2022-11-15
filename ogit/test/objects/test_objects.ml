@@ -35,7 +35,7 @@ let hash_bidon = Digest.from_hex "2f423d8532170b358868e1af76688c4a"
 let () = Format.printf "is_known %s? %b@." (Digest.to_hex hash_de_toto_txt) (is_known hash_de_toto_txt) 
 let () = Format.printf "is_known %s? %b@." (Digest.to_hex hash_bidon) (is_known hash_bidon)
 
-
+(*
 (* test de store_object et read_text_object *)
 let hash_obj4 = store_object obj4 
 let text_obj4 = read_text_object hash_obj4
@@ -82,4 +82,4 @@ let () = restore_work_directory (read_directory_object hash_repo)
 let () = Format.printf "@.EXECUTION DE LA COMMANDE SHELL tree -a@."
 let _ = Sys.command "tree -a"
 let () = Format.printf "@.EXECUTION DE LA COMMANDE SHELL cat toto.txt@."
-let _ = Sys.command "cat toto.txt"
+let _ = Sys.command "cat toto.txt"*)

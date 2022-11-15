@@ -22,9 +22,8 @@ let is_known (_h:Digest.t) =
   begin
     (*Chemin général a vérif sinon finito*)
     (*Pour les test je force ocaml a être dans le dossier de test donné par le prof*)
-    Unix.chdir "main/.ogit/objects";
     (*On va vérifier si le fichier existe, on se base sur le nom hash*)
-  if Sys.file_exists (Digest.to_hex _h ) then true else false
+  if Sys.file_exists (".ogit/objects/" ^ Digest.to_hex _h ) then true else false
   end
 
 (*Normalement elle marche mais c'est pas neuff, les tests dune ne l'aiment pas*)
@@ -46,33 +45,58 @@ let read_text_object _h =
 let store_object _obj = match _obj with
   | Text txt -> begin 
     (*On execute 2 commandes : Touch "hash de l'obj" + Echo du fichier dont la sortie standart est le fichier qu'on a crée*)
-    let err = Sys.command ("cd main/.ogit/objects && echo -n \"" ^ txt ^ "\"> " ^(Digest.to_hex (hash _obj))) in
+    let err = Sys.command ("cd .ogit/objects && echo -n \"" ^ txt ^ "\"> " ^(Digest.to_hex (hash _obj))) in
     if err <> 0 then failwith "erreur" else (*Si il y a une erreur, le retour de la commande sera différent de 0*)
     Digest.string txt
   end
   | Directory dir -> match dir with
     |[] -> begin (*Si dir vide*)
       let tmp = Digest.to_hex (Digest.string "") in
-      let err = Sys.command ("cd main/.ogit/objects && touch " ^ tmp) in
+      let err = Sys.command ("cd .ogit/objects && touch " ^ tmp) in
       if err <> 0 then failwith "erreur" else
       Digest.string ""
       end
     | _ -> begin
-      let err = Sys.command ("cd main/.ogit/objects && echo -n \"" ^ (String.trim(String.concat "\n" (hashDir _obj))) ^ "\" > " ^ (Digest.to_hex (hash _obj))) in
+      let err = Sys.command ("cd .ogit/objects && echo -n \"" ^ (String.trim(String.concat "\n" (hashDir _obj))) ^ "\" > " ^ (Digest.to_hex (hash _obj))) in
       if err <> 0 then failwith "erreur" else
       hash _obj
     end;;
 
-let rec convert_dir_to_obj _dir = match _dir with
-  | [] -> []
-  | (nom, is_dir, digest, _) :: tl -> (nom, is_dir, digest, (if is_dir then convert_dir_to_obj _dir else Text (read_text_object (Digest.to_hex digest)))) :: (convert_dir_to_obj tl);;
 
-let store_work_directory () = (*unit->string*)
-  let dir = Sys.readdir "." in
-  let rec loop aux = function
-    | [] -> aux
-    | hd :: tl -> loop ((hd, Sys.is_directory hd, Digest.file hd, (if Sys.is_directory hd then store_work_directory () else Text (read_text_object (Digest.to_hex (Digest.file hd)))) ) :: aux) tl
-  in Directory (loop [] (Array.to_list dir));;
+(*let rec convert_dir_to_obj _dir = match _dir with
+  | [] -> []
+  | (nom, is_dir, digest, _) :: tl -> (nom, is_dir, digest, (if is_dir then convert_dir_to_obj _dir else Text (read_text_object (Digest.to_hex digest)))) :: (convert_dir_to_obj tl)
+  *)
+
+let rec store_work_directory () = 
+  let dir = Sys.readdir "repo/" in
+  let str = ref "" in
+  let rec iter _dir _current_dir = match _dir with
+    | [] -> ()
+    | hd :: tl -> begin
+      if Sys.is_directory ("repo/" ^ hd) then begin
+        print_string ("TEST1" ^ hd);
+        let dir = Sys.readdir ("repo/" ^ hd) in
+        let dir = Array.to_list dir in
+        print_string ("tu crash ? " ^ hd);
+        let dir = List.map (fun x -> (x, Sys.is_directory ("repo/" ^ hd ^ "/" ^ x), Digest.file ("repo/" ^ hd ^ "/" ^ x), Text (read_text_object (Digest.to_hex (Digest.file ("repo/" ^ hd ^ "/" ^ x)))))) dir in
+        print_string ("tu crash 2 ? " ^ hd);
+        str := !str ^ (hd ^ ";" ^ "d" ^ ";" ^ (Digest.to_hex (hash (Directory dir))) ^ "\n");
+        iter tl (hd ^ "/" ^ _current_dir)
+      end
+      else begin
+        print_string ("TEST2" ^ hd);
+        str := !str ^ (hd ^ ";" ^ "t" ^ ";" ^ (Digest.to_hex (Digest.file ("repo/" ^ hd))) ^ "\n");
+        iter tl _current_dir
+      end
+    end
+  in iter (Array.to_list dir) "";
+  let err = Sys.command ("cd .ogit/objects && echo -n \"" ^ !str ^ "\" > " ^ (Digest.to_hex (hash (Directory [])))) in
+  if err <> 0 then failwith "erreur" else
+  Digest.to_hex (hash (Directory []))
+
+    
+
 
 (*On va chercher le répertoire courant*)
 
@@ -85,7 +109,7 @@ let read_directory_object _h = failwith "TODO"
 (*On va chercher le répertoire courant*)
 
 (*On va juste lire le fichier et on va le renvoyer dans un objet de type t*)
-  
+
 let clean_work_directory () = failwith "TODO"
 
 let restore_work_directory _obj = failwith "TODO" 
