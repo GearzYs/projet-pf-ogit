@@ -2,21 +2,21 @@ type t =
 | Text of string 
 | Directory of (string * bool * Digest.t * t) list
 
-(*val obj4 : t =
-  Directory
-   [("obj1", false, ":ۺÑy\031ºã쐈Ė8p", Text "hello, world!");
-    ("obj2", false, *)
+let hashDir _obj =
+  match _obj with
+    (*Si c'est juste du text on le renvoi dans une liste*)
+  | Text s -> [s]
+    (*si c'est un dir on va le parcourir par récursion et en faire une liste*)
+  | Directory dir -> let rec loop aux = function
+      (*si le dir est vide on renvoi notre liste avec tout les noms bool et hash*)
+      | [] -> aux
+      (*On force le format main.ml;t;94daecdffe4003a70f02ee8989295b32 et on ajoute tout ça dans une liste par récursion*)
+      | (nom, is_dir, digest, _) :: tl -> loop ((nom ^ ";" ^ (if is_dir then "d" else "t") ^ ";" ^ (Digest.to_hex digest)) :: aux) tl
+    (*On doit reverse la liste sinon ça marche pas ta vu*)
+      in List.rev (loop [] dir)
 
-let hash _obj = match _obj with
-  (*Si c'est juste du text on le renvoi dans une Digest.t string*)
-  | Text s -> Digest.to_hex(Digest.string s)
-  (*si c'est un dir on va le parcourir par récursion et en faire une liste*)
-  | Directory dir -> let rec loop aux rest= match rest with
-    (*si le dir est vide on renvoi notre string avec tout les noms bool et hash*)
-    | [] -> aux
-    (*On force le format main.ml;t;94daecdffe4003a70f02ee8989295b32 et on ajoute tout ça dans une String par récursion*)
-    | (nom, is_dir, digest, _) :: tl -> loop (nom ^ ";" ^ (if is_dir then "d" else "t") ^ ";" ^ digest ^ "\n" ^ aux) tl
-  in loop "" dir
+(*Mtn on va juste digest ce que nous a renvoyé la fonction d'avant*)
+let hash _obj = Digest.string (String.concat "\n" (hashDir _obj))
 
 let is_known (_h:Digest.t) = 
   begin
@@ -80,7 +80,7 @@ let store_work_directory () = (*unit->string*)
 
 (*On va juste lire le fichier et le renvoyer*)
 
-let read_directory_object _h =
+let read_directory_object _h = failwith "TODO"
 
 (*On va chercher le répertoire courant*)
 
