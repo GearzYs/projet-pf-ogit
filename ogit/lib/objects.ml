@@ -80,7 +80,7 @@ let read_file _path = (*On lit le fichier et on le renvoi sous forme de string*)
 let store_work_directory () = (*On va lire le répertoire courant et on va le stocker*)
   let contenu = dir_to_list "repo/" in
   let rec loop res aux= match aux with
-    | [] -> String.concat ";" (List.rev res)
+    | [] -> Array.concat "\n" (List.rev res)
     | hd::tl -> if not(Sys.is_directory hd) then
       let hash1 = hash (Text(read_file hd)) in
       if not(is_known hash1) then
@@ -139,4 +139,12 @@ let restore_work_directory _obj =
 (*
 let merge_work_directory_I _obj = failwith "not implemented"
 voir lozes ou marie comment faire
+*)
+
+(*
+Demande prof :
+- store_work_directory renvoie quel hash ?
+- Comment on fait pour lancer une fonction d'un autre module ?
+- Comment runtest dune "name_test" ?
+- Est ce qu'on doit compiler le projet avec ocamlc ?
 *)

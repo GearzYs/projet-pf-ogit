@@ -11,7 +11,6 @@ val ogit_init : unit -> unit
     Une exception est levée si un conflit est présent. **) 
 val ogit_commit : string -> unit
 
-
 (** restaure le repo dans l'état indiqué (hash hexadécimal).
     Une exception est levée si le hash est inconnu. **) 
 val ogit_checkout : string -> unit
