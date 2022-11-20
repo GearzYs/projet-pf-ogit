@@ -21,10 +21,10 @@ let () = Format.printf "hash de obj1 : %s@." (Digest.to_hex (hash obj1))
 let obj2 = Text "salut, le monde!"
 let obj3 = Directory []
 let obj4 = Directory [
-  ("obj1", false, (hash obj1), obj1);
-  ("obj2", false, (hash obj2), obj2);
-  ("obj3", true, (hash obj3), obj3)
-]
+  ("obj1", false, hash obj1, obj1);
+    ("obj2", false, hash obj2, obj2);
+    ("obj3", true, hash obj3, obj3)
+    ]
 let () = Format.printf "hash de obj4 : %s@." (Digest.to_hex (hash obj4))
 
 
@@ -63,7 +63,7 @@ let _ = Sys.command "tree"
 let hash_repo = store_work_directory ()
 let () = Format.printf "@.hash_repo = %s@." (Digest.to_hex hash_repo)
 let () = Format.printf "@.CONTENU DU FICHIER %s:@.%s@." (Digest.to_hex hash_repo) (read_text_object hash_repo)
-(*
+
 let rec pp_object = function
 | Text s -> Format.sprintf "Text(\"%s\")" s
 | Directory(l) -> 
@@ -85,4 +85,3 @@ let () = Format.printf "@.EXECUTION DE LA COMMANDE SHELL tree -a@."
 let _ = Sys.command "tree -a"
 let () = Format.printf "@.EXECUTION DE LA COMMANDE SHELL cat toto.txt@."
 let _ = Sys.command "cat toto.txt"
-*)

@@ -52,7 +52,7 @@ let read_text_object _h =
   begin 
     (*Pour les test je force ocaml a être dans le dossier de test donné par le prof*)
     (*On ouvre le fichier en lecture binaire hex, je penses que ça peut eviter des soucis avec les accents etc*)
-  let ic = open_in (_h) in
+  let ic = open_in (".ogit/objects/" ^ Digest.to_hex _h) in
   let len = in_channel_length ic in
   let s = really_input_string ic len in
   close_in ic;
@@ -70,21 +70,28 @@ let dir_to_list dir =
   in
   loop [] [dir]
 
-let store_work_directory () = 
+let read_file _path = (*On lit le fichier et on le renvoi sous forme de string*)
+  let ic = open_in _path in
+  let len = in_channel_length ic in
+  let s = really_input_string ic len in
+  close_in ic;
+  s
+
+let store_work_directory () = (*On va lire le répertoire courant et on va le stocker*)
   let contenu = dir_to_list "repo/" in
   let rec loop res aux= match aux with
-    | [] -> String.concat "\n" (List.rev res)
+    | [] -> String.concat ";" (List.rev res)
     | hd::tl -> if not(Sys.is_directory hd) then
-      let hash1 = hash (Text(read_text_object hd)) in
+      let hash1 = hash (Text(read_file hd)) in
       if not(is_known hash1) then
-        loop ((store_object (Text (read_text_object hd)))::res) tl
+        loop ((store_object (Text (read_file hd)))::res) tl
       else loop res tl
     else loop res tl
   in loop [] contenu
 
-let dir_file_in_list _h = 
+let dir_file_in_list _h = (*On va convertir le contenu du fichier en liste*)
   if is_known (Digest.from_hex _h) then
-    let file = read_text_object _h in
+    let file = read_text_object (Digest.from_hex _h) in
     let rec loop res aux = match aux with
       | [] -> res
       | hd::tl -> let tmp = String.split_on_char ';' hd in
@@ -92,10 +99,44 @@ let dir_file_in_list _h =
     in loop [] (String.split_on_char '\n' file)
   else failwith "not a known object"
 
-let rec read_directory_object _h =
-  
-let clean_work_directory () = Sys.command("find repo/ -type f -name \"[^.]*\" -delete")
+let rec read_directory_object _h = (*On va lire le fichier et on va le stocker*)
+  let obj = dir_file_in_list _h in
+  let rec loop res aux = match aux with
+    | [] -> Directory(List.rev res)
+    | (nom, is_dir, hash)::tl -> if is_dir = "d" then
+      loop ((nom, true, Digest.from_hex hash, read_directory_object hash)::res) tl
+    else
+      loop ((nom, false, Digest.from_hex hash, Text(read_text_object (Digest.from_hex hash)))::res) tl
+  in loop [] obj
 
-let restore_work_directory _obj = failwith "TODO" 
+let clean_work_directory () = 
+  let err=Sys.command("find repo/ -type f -name \"[^.]*\" -delete") in
+  if err <> 0 then failwith "erreur" else
+  ()
 
-let merge_work_directory_I _obj = failwith "TODO"
+(** écrit dans repo/ 
+    tous les fichiers mentionnés dans l'objet passé en paramètre 
+    val restore_work_directory : t -> unit
+**)
+
+let restore_work_directory _obj = 
+  let rec loop aux = match aux with
+    | [] -> ()
+    | (nom, is_dir, _, obj)::tl -> if is_dir then
+      begin
+        let err = Sys.command ("mkdir repo/" ^ nom) in
+        if err <> 0 then failwith "erreur" else
+        loop tl
+      end
+    else
+      begin
+        let err = Sys.command ("printf \"%s\" \"" ^ (match obj with | Text txt -> txt | _ -> failwith "warn not possible") ^ "\" > repo/" ^ nom) in
+        if err <> 0 then failwith "erreur" else
+        loop tl
+      end
+  in loop (match _obj with | Directory dir -> dir | _ -> failwith "not a directory")
+
+(*
+let merge_work_directory_I _obj = failwith "not implemented"
+voir lozes ou marie comment faire
+*)

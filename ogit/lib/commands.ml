@@ -1,23 +1,9 @@
 (** fichier commands.ml **)
 (** fonctions représentant les commandes ogit **)
 
+(*voir comment compiler pour utiliser les modules*)
 let ogit_init () = 
-  try 
-        let _ = Sys.is_directory ".ogit" in ()
-    with Sys_error _ -> Sys.command ("mkdir .ogit && mkdir .ogit/logs && mkdir .ogit/objects && touch .ogit/HEAD.txt && echo \"tree 00 > .ogit/objects/0") |> ignore
-
-  (*add first empty commit*)
-  (*let _ = Sys.command "echo \"tree 00 > .ogit/objects/0" in
-  ()*)
-  (*Logs.init_commit ();;*)
-(*
-let is_present file_name = 
-  begin
-    try 
-      let path = ".ogit/objects/" ^ file_name in
-      Sys.file_exists path
-    with Sys_error _ -> false
-  end
+  Ogit.*
 
 let ogit_commit _msg = 
   begin
@@ -37,4 +23,3 @@ let ogit_log () =
   () (*Logs.read_commit _h*)
 
 let ogit_merge _hash = failwith "TODO"
-*)

@@ -41,7 +41,9 @@ let make_commit _s _h =
     {parents = head; date = d; message = _s; content = c}
 
 
-(*A finir quand Objects.store_work_directory sera fini*)
+(*A finir quand Objects.store_work_directory sera fini 
+voir  avec lozes ou marie comment on doit faire    
+*)
 let init_commit () =
     let d = Unix.time () in
     let c = Digest.to_hex(Digest.string "") in
