@@ -10,7 +10,7 @@ let ogit_init () =
   (*let _ = Sys.command "echo \"tree 00 > .ogit/objects/0" in
   ()*)
   (*Logs.init_commit ();;*)
-
+(*
 let is_present file_name = 
   begin
     try 
@@ -37,3 +37,4 @@ let ogit_log () =
   () (*Logs.read_commit _h*)
 
 let ogit_merge _hash = failwith "TODO"
+*)

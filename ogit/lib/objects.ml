@@ -18,20 +18,19 @@ let hashDir _obj =
 (*Mtn on va juste digest ce que nous a renvoyé la fonction d'avant*)
 let hash _obj = Digest.string (String.concat "\n" (hashDir _obj))
 
-let is_known (_h:Digest.t) =
+let is_known _h =
     (*Chemin général a vérif sinon finito*)
     (*Pour les test je force ocaml a être dans le dossier de test donné par le prof*)
     (*decommenter ligne endessous *)
-    Unix.chdir ".ogit/objects";
     (*On va vérifier si le fichier existe, on se base sur le nom hash*)
-    Sys.file_exists (Digest.to_hex _h )
-  
- (*a partir dici on est pas sur que ca marche bien*)
+    Sys.file_exists (".ogit/objects/" ^ (Digest.to_hex _h ))
+
+(*a partir dici on est pas sur que ca marche bien*)
 (*Semble marcher mais a des soucis avec dune a cause du répertoire courant*)
 let store_object _obj = match _obj with
   | Text txt -> begin 
     (*On execute 2 commandes : Touch "hash de l'obj" + Echo du fichier dont la sortie standart est le fichier qu'on a crée*)
-    let err = Sys.command ("cd .ogit/objects && echo -n \"" ^ txt ^ "\"> " ^(Digest.to_hex (hash _obj))) in
+    let err = Sys.command ("cd .ogit/objects && printf \"%s\" \"" ^ txt ^ "\"> " ^(Digest.to_hex (hash _obj))) in
     if err <> 0 then failwith "erreur" else (*Si il y a une erreur, le retour de la commande sera différent de 0*)
     Digest.string txt
   end
@@ -43,7 +42,7 @@ let store_object _obj = match _obj with
       Digest.string ""
       end
     | _ -> begin
-      let err = Sys.command ("cd .ogit/objects && echo -n \"" ^ (String.trim(String.concat "\n" (hashDir _obj))) ^ "\" > " ^ (Digest.to_hex (hash _obj))) in
+      let err = Sys.command ("cd .ogit/objects && printf \"%s\" \"" ^ (String.trim(String.concat "\n" (hashDir _obj))) ^ "\" > " ^ (Digest.to_hex (hash _obj))) in
       if err <> 0 then failwith "erreur" else
       hash _obj
     end;;
@@ -60,72 +59,9 @@ let read_text_object _h =
   (*on fini le taff et return la chaine qui correspond a tout le contenue du fichier*)
   s
   end
-  
-(*marche aps
-def rec(racine):
-    lst=[mes fichiers et dossiers de racine]
 
-    for el in lst:
-        if el==file:
-            je creer un fichier le titre=mon hash et le contenue est mon contenue
-
-        elif el==dir:
-            je creer un fichier le titre=mon hash et pour le contenue la liste de mes fils (fonction que vous avez deja)
-            rec(el)
-
-(*marche aps voir khalil pour savoir pk il a fait cette fonction 
-let rec convert_dir_to_obj _dir = match _dir with
-  | [] -> []
-  | (nom, is_dir, digest, _) :: tl -> (nom, is_dir, digest, (if is_dir then convert_dir_to_obj _dir else Text (read_text_object (Digest.to_hex digest)))) :: (convert_dir_to_obj tl);;
-*)
-
-match hd with 
-        | Text hd -> Sys.command ("cd .ogit/objects && touch " ^ Digest.to_hex (Digest.string (read_text_object hd)) ^ " && echo -n \" " ^ read_text_object hd  ^ "\" > " ^ Digest.to_hex (Digest.string (read_text_object hd)))
-        | Directory hd -> Sys.command ("cd .ogit/objects && touch " ^ Digest.string (String.concat "\n" (hashDir hd)))
-
-
-if Sys.is_directory hd then Sys.command ("cd .ogit/objects && touch " ^ hash hd ) 
-      else Sys.command ("cd .ogit/objects && touch " ^ hash hd  ^ " && echo -n \" " ^ read_text_object hd  ^ "\" > " ^ Digest.to_hex (Digest.string (read_text_object hd)))  
-
-
-let rec store_work_directory () = 
-  let contenu = Sys.readdir "repo/" in
-  let rec parcours contenu  = match contenu with 
-    | [] -> Sys.command ("echo ")
-    | hd :: tl -> if Sys.is_directory hd then Sys.command ("cd .ogit/objects && touch " ^ hash hd ) 
-      else Sys.command ("cd .ogit/objects && touch " ^ hash hd  ^ " && echo -n \" " ^ read_text_object hd  ^ "\" > " ^ Digest.to_hex (Digest.string (read_text_object hd)))  
-
-
-(*je capte pas comment parcourir c entrain de me gaver
-si c un type text je renvoie le text 
-sinon je parcours dir puis si c'est vide je renvoie hash directory vide 
-     sinon je regarde si il a une head et taail et je parcours recursivement
-     puis je hash dedans quand je peux et je stocke dans une liste   
-
-faut trouver comment convertir tout ce qu'on recup dans variable contenu de store work directory en type t
-puis avec ma fonction parcours on pourra parcourir et creer une liste contenu les dossiers et leur contenu hash 
-*)
-
-version recente 
-let rec store_work_directory () = 
-  let contenu = Sys.readdir "repo/" in
-  let rec parcours contenu  = for i = 0 to Array.length contenu - 1 do
-    let file = contenu.(i) in
-    if not(is_known file) then
-      if Sys.is_directory file then
-        let contenu2 = Sys.readdir file in for i = 0 to Array.length contenu2 - 1 do
-          let file2 = contenu2.(i) in
-          if  Sys.is_directory file2 then store_object (Directory (parcours (read_text_object contenu2.(i))))
-          else store_object (Text (read_text_object contenu2.(i)))
-        done
-      else
-        store_object (Text file)
-    else ()
-  done in parcours contenu
-*)
-
-
-let rec dir_to_list dir =
+(*on l'uitilise  pour convertir "repo/" sous forme de liste afin d'itérer desssus*)
+let dir_to_list dir =
   let rec loop acc = function
     | [] -> acc
     | hd :: tl ->
@@ -134,33 +70,29 @@ let rec dir_to_list dir =
   in
   loop [] [dir]
 
-let convert_list_to_array (l : 'a list) : 'a array =
-  let a = Array.make (List.length l) (List.hd l) in
-  let rec aux i = function
-    | [] -> ()
-    | x :: xs -> a.(i) <- x; aux (i + 1) xs
-  in
-  aux 0 l;
-  a
-  
-(* hash repo faut avoir hash de tout son contenu
-voir pourquoi type unit -> unit sachant que store_object renvoie le hash de l'objet 
-voir comment recup ce qu'affiche store object pour pouvoir aafficher le hash   
-*)
-
 let store_work_directory () = 
-  let contenu = convert_list_to_array (dir_to_list "repo/") in
-  for i = 0 to Array.length contenu - 1 do
-    let file = contenu.(i) in
-    if not(Sys.is_directory file) then
-      let hash1 = hash (Text(read_text_object file)) in
+  let contenu = dir_to_list "repo/" in
+  let rec loop res aux= match aux with
+    | [] -> String.concat "\n" (List.rev res)
+    | hd::tl -> if not(Sys.is_directory hd) then
+      let hash1 = hash (Text(read_text_object hd)) in
       if not(is_known hash1) then
-        store_object (Text (read_text_object file))
-      else failwith "file already exist"
-    else failwith "file is a directory"
-  done
+        loop ((store_object (Text (read_text_object hd)))::res) tl
+      else loop res tl
+    else loop res tl
+  in loop [] contenu
 
-let read_directory_object _h = failwith "TODO"
+let dir_file_in_list _h = 
+  if is_known (Digest.from_hex _h) then
+    let file = read_text_object _h in
+    let rec loop res aux = match aux with
+      | [] -> res
+      | hd::tl -> let tmp = String.split_on_char ';' hd in
+        loop ((List.nth tmp 0, List.nth tmp 1, List.nth tmp 2)::res) tl
+    in loop [] (String.split_on_char '\n' file)
+  else failwith "not a known object"
+
+let rec read_directory_object _h =
   
 let clean_work_directory () = Sys.command("find repo/ -type f -name \"[^.]*\" -delete")
 

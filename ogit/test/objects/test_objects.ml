@@ -63,12 +63,14 @@ let _ = Sys.command "tree"
 let hash_repo = store_work_directory ()
 let () = Format.printf "@.hash_repo = %s@." (Digest.to_hex hash_repo)
 let () = Format.printf "@.CONTENU DU FICHIER %s:@.%s@." (Digest.to_hex hash_repo) (read_text_object hash_repo)
+(*
 let rec pp_object = function
 | Text s -> Format.sprintf "Text(\"%s\")" s
 | Directory(l) -> 
   l |> List.sort compare |> List.map (fun (s,d,h,obj) -> Format.sprintf "(\"%s\",%b,%s,%s)" s d (Digest.to_hex h) (pp_object obj))
   |> String.concat ";" 
   |> Format.sprintf "Directory[%s]"
+
 let () = Format.printf "@.OBJET CORRESPONDANT AU REPO:@.%s@." (pp_object (read_directory_object hash_repo))
 
 
@@ -83,3 +85,4 @@ let () = Format.printf "@.EXECUTION DE LA COMMANDE SHELL tree -a@."
 let _ = Sys.command "tree -a"
 let () = Format.printf "@.EXECUTION DE LA COMMANDE SHELL cat toto.txt@."
 let _ = Sys.command "cat toto.txt"
+*)

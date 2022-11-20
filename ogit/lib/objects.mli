@@ -35,3 +35,4 @@ val restore_work_directory : t -> unit
 (** met à jour repo/ en applicant la règle Merge 1 **)
 val merge_work_directory_I : t -> bool
 
+
