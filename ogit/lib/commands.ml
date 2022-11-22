@@ -2,6 +2,7 @@
 (** fonctions représentant les commandes ogit **)
 
 (*voir comment compiler pour utiliser les modules*)
+
 let ogit_init () = 
   begin
   if Sys.file_exists ".ogit" then 
@@ -11,6 +12,7 @@ let ogit_init () =
     if err <> 0 then raise (Failure "ogit: error while creating the repository");
   let _ = Logs.init_commit in ()
   end
+
 let ogit_commit _msg = 
   (*ogit commit “<description>” : parcourt récursivement l’arbre de travail et
     ajoute tous les nouveaux états rencontrés, puis ajoute le commit correspondant 
@@ -34,4 +36,4 @@ let ogit_log () =
   let _ = Sys.command "cat .ogit/logs/HEAD" in
   () (*Logs.read_commit _h*)
 
-let ogit_merge _hash = failwith "TODO"
+let ogit_merge _hash = failwith "TODO"*)
