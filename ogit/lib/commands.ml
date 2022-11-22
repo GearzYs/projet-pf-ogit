@@ -2,7 +2,7 @@
 (** fonctions représentant les commandes ogit **)
 
 (*voir comment compiler pour utiliser les modules*)
-
+(*
 let ogit_init () = 
   begin
   if Sys.file_exists ".ogit" then 
