@@ -21,10 +21,10 @@ let () = Format.printf "hash de obj1 : %s@." (Digest.to_hex (hash obj1))
 let obj2 = Text "salut, le monde!"
 let obj3 = Directory []
 let obj4 = Directory [
-  ("obj1", false, hash obj1, obj1);
-    ("obj2", false, hash obj2, obj2);
-    ("obj3", true, hash obj3, obj3)
-    ]
+  ("obj1", false, (hash obj1), obj1);
+  ("obj2", false, (hash obj2), obj2);
+  ("obj3", true, (hash obj3), obj3)
+]
 let () = Format.printf "hash de obj4 : %s@." (Digest.to_hex (hash obj4))
 
 
@@ -58,6 +58,7 @@ On efface au début le contenu du répertoire .ogit/objects pour vérifier que s
 Si le test échoue, il faudra restaurer ce répertoire en se basant sur l'archive fournie pour que les tests du début
 passent à nouveau
 *)
+
 let () = Format.printf "@.EXECUTION DE LA COMMANDE SHELL tree@."
 let _ = Sys.command "tree"
 let hash_repo = store_work_directory ()
@@ -73,10 +74,10 @@ let rec pp_object = function
 
 let () = Format.printf "@.OBJET CORRESPONDANT AU REPO:@.%s@." (pp_object (read_directory_object hash_repo))
 
-
 (* test de clean_work_directory et restore_work_directory *)
 let () = Format.printf "@.EXECUTION DE clean_work_directory@."
 let () = clean_work_directory ()
+
 let () = Format.printf "@.EXECUTION DE LA COMMANDE SHELL tree -a@."
 let _ = Sys.command "tree -a"
 let () = Format.printf "@.EXECUTION DE restore_work_directory@."

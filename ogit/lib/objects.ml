@@ -100,20 +100,20 @@ let rec dir_to_t_object _path = (*On converti un dir en t_object*)
 in loop [] (read_dir _path)
 
 let store_work_directory () = (*On va lire le répertoire courant et on va le stocker*)
-  let contenu = read_dir "repo/" in
+  let contenu = read_dir "./" in
   let rec loop res aux chem= match aux with
-    | [] -> store_object (Directory (dir_to_t_object "repo/"))
+    | [] -> store_object (Directory (dir_to_t_object "./"))
     | hd::tl -> if not(Sys.is_directory (Filename.concat chem hd)) then
       let hash1 = hash (Text(read_file (Filename.concat chem hd))) in
       if not(is_known hash1) then
         loop ((store_object (Text (read_file (Filename.concat chem hd))))::res) tl chem
       else loop (hd::res) tl chem
     else loop ((store_object (Directory (dir_to_t_object (Filename.concat chem hd))))::res) (read_dir (Filename.concat chem hd)) (chem ^ hd ^ "/")
-  in loop [] contenu "repo/"
+  in loop [] contenu "./"
 
 let dir_file_in_list _h = (*On va convertir le contenu du fichier en liste*)
-  if is_known (Digest.from_hex _h) then
-    let file = read_text_object (Digest.from_hex _h) in
+  if is_known _h then
+    let file = read_text_object _h in
     let rec loop res aux = match aux with
       | [] -> res
       | hd::tl -> let tmp = String.split_on_char ';' hd in
@@ -123,16 +123,16 @@ let dir_file_in_list _h = (*On va convertir le contenu du fichier en liste*)
 
 let rec read_directory_object _h = (*On va lire le fichier et on va le stocker*)
   let obj = dir_file_in_list _h in
-  let rec loop res aux = match aux with
+  let rec loop res aux chem = match aux with
     | [] -> Directory(List.rev res)
     | (nom, is_dir, hash)::tl -> if is_dir = "d" then
-      loop ((nom, true, Digest.from_hex hash, read_directory_object hash)::res) tl
+      loop ((nom, true, Digest.from_hex hash, read_directory_object (Filename.concat chem (Digest.from_hex hash)))::res) tl (chem^nom^"/")
     else
-      loop ((nom, false, Digest.from_hex hash, Text(read_text_object (Digest.from_hex hash)))::res) tl
-  in loop [] obj
+      loop ((nom, false, Digest.from_hex hash, Text(read_text_object (Digest.from_hex hash)))::res) tl chem
+  in loop [] obj "./"
 
 let clean_work_directory () = 
-  let err=Sys.command("find repo/ -type f -name \"[^.]*\" -delete") in
+  let err=Sys.command("find ./ -type f -name \"[^.]*\" -delete") in
   if err <> 0 then failwith "erreur" else
   ()
 
@@ -146,13 +146,13 @@ let restore_work_directory _obj =
     | [] -> ()
     | (nom, is_dir, _, obj)::tl -> if is_dir then
       begin
-        let err = Sys.command ("mkdir repo/" ^ nom) in
+        let err = Sys.command ("mkdir " ^ nom) in
         if err <> 0 then failwith "erreur" else
         loop tl
       end
     else
       begin
-        let err = Sys.command ("printf \"%s\" \"" ^ (match obj with | Text txt -> txt | _ -> failwith "warn not possible") ^ "\" > repo/" ^ nom) in
+        let err = Sys.command ("printf \"%s\" \"" ^ (match obj with | Text txt -> txt | _ -> failwith "warn not possible") ^ "\" > " ^ nom) in
         if err <> 0 then failwith "erreur" else
         loop tl
       end

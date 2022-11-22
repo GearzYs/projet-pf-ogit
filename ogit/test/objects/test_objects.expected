@@ -11,10 +11,10 @@ obj3;d;d41d8cd98f00b204e9800998ecf8427e
 EXECUTION DE LA COMMANDE SHELL tree
 .
 ├── foo
-│   ├── bar
-│   │   └── tata.txt
-│   ├── titi.txt
-│   └── toto.txt
+│   ├── bar
+│   │   └── tata.txt
+│   ├── titi.txt
+│   └── toto.txt
 └── toto.txt
 
 2 directories, 4 files
@@ -68,7 +68,7 @@ EXECUTION DE LA COMMANDE SHELL tree -a
 └── .ogit
     ├── HEAD
     ├── logs
-    │   └── 934258186f418bbb65825ae6c2d2af31
+    │   └── 934258186f418bbb65825ae6c2d2af31
     └── objects
         ├── 1e423d8532170b358868e1af76688c4a
         ├── 87113b72a9d03cbfb8aea342455d710f
@@ -85,22 +85,22 @@ EXECUTION DE restore_work_directory
 EXECUTION DE LA COMMANDE SHELL tree -a
 .
 ├── .ogit
-│   ├── HEAD
-│   ├── logs
-│   │   └── 934258186f418bbb65825ae6c2d2af31
-│   └── objects
-│       ├── 1e423d8532170b358868e1af76688c4a
-│       ├── 87113b72a9d03cbfb8aea342455d710f
-│       ├── 9ef6d96530cb3791f0dfb16d157220b6
-│       ├── a5b0164846456eb4c32115f57cfc3a38
-│       ├── bb6d4c2870158394ea6b4c6ec804d61f
-│       ├── c3ca6ad75c459ecccfdb10b421cbb489
-│       └── ec7e8e8ce16f3fe945d3c4c0955315d3
+│   ├── HEAD
+│   ├── logs
+│   │   └── 934258186f418bbb65825ae6c2d2af31
+│   └── objects
+│       ├── 1e423d8532170b358868e1af76688c4a
+│       ├── 87113b72a9d03cbfb8aea342455d710f
+│       ├── 9ef6d96530cb3791f0dfb16d157220b6
+│       ├── a5b0164846456eb4c32115f57cfc3a38
+│       ├── bb6d4c2870158394ea6b4c6ec804d61f
+│       ├── c3ca6ad75c459ecccfdb10b421cbb489
+│       └── ec7e8e8ce16f3fe945d3c4c0955315d3
 ├── foo
-│   ├── bar
-│   │   └── tata.txt
-│   ├── titi.txt
-│   └── toto.txt
+│   ├── bar
+│   │   └── tata.txt
+│   ├── titi.txt
+│   └── toto.txt
 └── toto.txt
 
 5 directories, 13 files
