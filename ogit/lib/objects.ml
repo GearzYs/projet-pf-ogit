@@ -61,14 +61,14 @@ let read_text_object _h =
   end
 
 (*on l'uitilise  pour convertir "repo/" sous forme de liste afin d'itérer desssus*)
-let dir_to_list dir =
+(*let dir_to_list dir =
   let rec loop acc = function
     | [] -> acc
     | hd :: tl ->
-      let acc = if Sys.is_directory hd then loop acc (Sys.readdir hd |> Array.to_list |> List.map (Filename.concat hd)) else hd :: acc in
+      let acc = if (Sys.is_directory hd) then loop acc (Sys.readdir hd |> Array.to_list |> List.map (Filename.concat hd)) else hd :: acc in
       loop acc tl
   in
-  loop [] [dir]
+  loop [] [dir]*)
 
 let read_file _path = (*On lit le fichier et on le renvoi sous forme de string*)
   let ic = open_in _path in
@@ -77,17 +77,39 @@ let read_file _path = (*On lit le fichier et on le renvoi sous forme de string*)
   close_in ic;
   s
 
+let array_to_list arr = (*On converti un array en liste*)
+  let rec loop acc = function
+    | [] -> acc
+    | hd :: tl -> loop (hd :: acc) tl
+  in
+  loop [] (Array.to_list arr)
+
+let read_dir _path = (*On lit le dir et on le renvoi sous forme de liste de string*)
+let contenu = array_to_list (Sys.readdir _path) in
+  let rec loop res acc = match acc with
+  | [] -> res
+  | hd::tl -> if (String.get hd 0 <> '.') then loop (hd::res) tl else loop res tl
+in loop [] contenu
+
+let rec dir_to_t_object _path = (*On converti un dir en t_object*)
+  let rec loop res acc = match acc with
+  | [] -> List.rev res
+  | hd::tl -> if (Sys.is_directory (Filename.concat _path hd)) then let dirtemp = Directory (dir_to_t_object (Filename.concat _path hd)) in
+  loop ((hd, true, hash dirtemp, dirtemp)::res) tl 
+  else loop ((hd, false, Digest.file (Filename.concat _path hd), Text (read_file (Filename.concat _path hd)))::res) tl
+in loop [] (read_dir _path)
+
 let store_work_directory () = (*On va lire le répertoire courant et on va le stocker*)
-  let contenu = dir_to_list "repo/" in
-  let rec loop res aux= match aux with
-    | [] -> Array.concat "\n" (List.rev res)
-    | hd::tl -> if not(Sys.is_directory hd) then
-      let hash1 = hash (Text(read_file hd)) in
+  let contenu = read_dir "." in
+  let rec loop res aux chem= match aux with
+    | [] -> store_object (Directory (dir_to_t_object "."))
+    | hd::tl -> if not(Sys.is_directory (Filename.concat chem hd)) then
+      let hash1 = hash (Text(read_file (Filename.concat chem hd))) in
       if not(is_known hash1) then
-        loop ((store_object (Text (read_file hd)))::res) tl
-      else loop res tl
-    else loop res tl
-  in loop [] contenu
+        loop ((store_object (Text (read_file (Filename.concat chem hd))))::res) tl chem
+      else loop (hd::res) tl chem
+    else loop ((store_object (Directory (dir_to_t_object (Filename.concat chem hd))))::res) (read_dir (Filename.concat chem hd)) (chem ^ hd ^ "/")
+  in loop [] contenu "."
 
 let dir_file_in_list _h = (*On va convertir le contenu du fichier en liste*)
   if is_known (Digest.from_hex _h) then
