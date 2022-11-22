@@ -15,7 +15,7 @@ val ogit_commit : string -> unit
 (** restaure le repo dans l'état indiqué (hash hexadécimal).
     Une exception est levée si le hash est inconnu. **) 
 val ogit_checkout : string -> unit
-    
+
 (** affiche les information concernant tous les commit ancètre de l'état actuel, du plus ancien au plus récent. **) 
 val ogit_log : unit -> unit 
 
