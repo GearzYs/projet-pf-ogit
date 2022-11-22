@@ -18,13 +18,16 @@ let ogit_commit _msg =
     par un point (e.g. “.mvn”) sont ignorés*)
   let tmp = Logs.make_commit _msg (Objects.store_work_directory ()) in
   let head = Logs.store_commit tmp in
-  Logs.set_head [head]
+  Logs.set_head [Digest.string head]
 
 let ogit_checkout _hash = 
 (*Ouvrir logs du hash, lire le fichier, parcourir tout et remplacer*)
   if Sys.file_exists( ".ogit/logs/" ^_hash) then
-   let actualCommit = Logs.read_commit _hash in
-   
+    let actualCommit = Logs.read_commit _hash in
+    let _obj = Objects.read_directory_object actualCommit.content in
+    let _ = Objects.restore_work_directory _obj
+    in Logs.set_head [_hash]
+
   else raise (Failure "Hash inconnu")
 
 let ogit_log () = 

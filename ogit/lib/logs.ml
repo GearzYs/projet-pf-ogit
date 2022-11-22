@@ -40,7 +40,6 @@ let make_commit _s _h =
     let c = Digest.string (String.trim(String.concat "\n" (put_file_in_list objfile))) in
     {parents = head; date = d; message = _s; content = c}
 
-
 (*A finir quand Objects.store_work_directory sera fini 
 voir  avec lozes ou marie comment on doit faire    
 *)
