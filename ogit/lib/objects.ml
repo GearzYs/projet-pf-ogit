@@ -80,7 +80,7 @@ let read_file _path = (*On lit le fichier et on le renvoi sous forme de string*)
 let store_work_directory () = (*On va lire le répertoire courant et on va le stocker*)
   let contenu = dir_to_list "repo/" in
   let rec loop res aux= match aux with
-    | [] -> Array.concat "\n" (List.rev res)
+    | [] -> String.concat "\n" (List.rev res)
     | hd::tl -> if not(Sys.is_directory hd) then
       let hash1 = hash (Text(read_file hd)) in
       if not(is_known hash1) then
