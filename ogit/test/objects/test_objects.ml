@@ -73,7 +73,7 @@ let rec pp_object = function
   |> Format.sprintf "Directory[%s]"
 
 let () = Format.printf "@.OBJET CORRESPONDANT AU REPO:@.%s@." (pp_object (read_directory_object hash_repo))
-(*
+
 (* test de clean_work_directory et restore_work_directory *)
 let () = Format.printf "@.EXECUTION DE clean_work_directory@."
 let () = clean_work_directory ()
@@ -86,4 +86,3 @@ let () = Format.printf "@.EXECUTION DE LA COMMANDE SHELL tree -a@."
 let _ = Sys.command "tree -a"
 let () = Format.printf "@.EXECUTION DE LA COMMANDE SHELL cat toto.txt@."
 let _ = Sys.command "cat toto.txt"
-*)

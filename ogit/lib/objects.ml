@@ -119,18 +119,17 @@ let dir_file_in_list _h = (*On va convertir le contenu du fichier en liste*)
       | hd::tl -> let tmp = String.split_on_char ';' hd in
         loop ((List.nth tmp 0, List.nth tmp 1, List.nth tmp 2)::res) tl
     in loop [] (String.split_on_char '\n' file)
-  else failwith "not a known object"
+  else failwith "Le fichier n'existe pas"
 
 let rec read_directory_object _h = (*On va lire le fichier et on va le stocker*)
- 
-let rec loop res aux chem = 
-    match aux with
-    | [] -> Directory(List.rev res)
-    | (nom, is_dir, hash)::tl -> if is_dir = "d" then 
-      loop ((nom, true, Digest.from_hex hash, read_directory_object (Digest.from_hex hash))::res) tl (chem^nom^"/") 
-    else
-      loop ((nom, false, Digest.from_hex hash, Text(read_text_object (Digest.from_hex hash)))::res) tl chem
-  in loop [] (dir_file_in_list _h) "./" (*obj non reconnu*) 
+  let rec loop res aux chem = 
+      match aux with
+      | [] -> Directory(List.rev res)
+      | (nom, is_dir, hash)::tl -> if is_dir = "d" then 
+        loop ((nom, true, Digest.from_hex hash, read_directory_object (Digest.from_hex hash))::res) tl (chem^nom^"/") 
+      else
+        loop ((nom, false, Digest.from_hex hash, Text(read_text_object (Digest.from_hex hash)))::res) tl chem
+    in loop [] (dir_file_in_list _h) "./" (*obj non reconnu*) 
 
 let clean_work_directory () = 
   let err=Sys.command("find ./ -type f -name \"[^.]*\" -delete") in
