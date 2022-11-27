@@ -2,7 +2,7 @@
 (** fonctions représentant les commandes ogit **)
 
 (*voir comment compiler pour utiliser les modules*)
-(*
+
 let ogit_init () = 
   begin
   if Sys.file_exists ".ogit" then 
@@ -18,9 +18,9 @@ let ogit_commit _msg =
     ajoute tous les nouveaux états rencontrés, puis ajoute le commit correspondant 
     avec pour parent le commit HEAD. Les fichiers dont le nom commence 
     par un point (e.g. “.mvn”) sont ignorés*)
-  let tmp = Logs.make_commit _msg (Objects.store_work_directory ()) in
+  let tmp = Logs.make_commit _msg (Digest.to_hex(Objects.store_work_directory ())) in
   let head = Logs.store_commit tmp in
-  Logs.set_head [Digest.string head]
+  Logs.set_head [head]
 
 let ogit_checkout _hash = 
 (*Ouvrir logs du hash, lire le fichier, parcourir tout et remplacer*)
@@ -33,7 +33,15 @@ let ogit_checkout _hash =
   else raise (Failure "Hash inconnu")
 
 let ogit_log () = 
-  let _ = Sys.command "cat .ogit/logs/HEAD" in
-  () (*Logs.read_commit _h*)
+  let rec aux hd = 
+    if hd = [] then ()
+    else
+      let commit = Logs.read_commit (List.hd hd) in
+      let _ = print_endline ("commit " ^ Digest.to_hex(commit.content) ^ " " ^ commit.message) in
+      aux (commit.parents)
+  in aux (Logs.get_head ())
+  
 
-let ogit_merge _hash = failwith "TODO"*)
+
+
+(*let ogit_merge _hash = failwith "TODO"*)

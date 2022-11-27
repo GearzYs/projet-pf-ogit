@@ -45,9 +45,8 @@ voir  avec lozes ou marie comment on doit faire
 *)
 let init_commit () =
     let d = Unix.time () in
-    let c = Digest.to_hex(Digest.string "") in
     let p = [] in
-    {parents = p; date = d; message = "init commit"; content = c (*Objects.store_work_directory*)}
+    {parents = p; date = d; message = "init commit"; content = Objects.store_work_directory ()}
 
 let store_commit _c =
     let oc = open_out (".ogit/logs/" ^ (Digest.to_hex _c.content)) in
