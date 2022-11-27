@@ -1,6 +1,6 @@
 type t =
 | Text of string 
-| Directory of (string * bool * Digest.t * t) list
+| Directory of (string * bool * Digest.t * t) list;;
 
 let hashDir _obj =
   match _obj with
@@ -13,17 +13,17 @@ let hashDir _obj =
       (*On force le format main.ml;t;94daecdffe4003a70f02ee8989295b32 et on ajoute tout ça dans une liste par récursion*)
       | (nom, is_dir, digest, _) :: tl -> loop ((nom ^ ";" ^ (if is_dir then "d" else "t") ^ ";" ^ (Digest.to_hex digest)) :: aux) tl
     (*On doit reverse la liste sinon ça marche pas tas vu*)
-      in List.rev (loop [] dir)
+      in List.rev (loop [] dir);;
 
 (*Mtn on va juste digest ce que nous a renvoyé la fonction d'avant*)
-let hash _obj = Digest.string (String.concat "\n" (hashDir _obj))
+let hash _obj = Digest.string (String.concat "\n" (hashDir _obj));;
 
 let is_known _h =
     (*Chemin général a vérif sinon finito*)
     (*Pour les test je force ocaml a être dans le dossier de test donné par le prof*)
     (*decommenter ligne endessous *)
     (*On va vérifier si le fichier existe, on se base sur le nom hash*)
-    Sys.file_exists (".ogit/objects/" ^ (Digest.to_hex _h ))
+    Sys.file_exists (".ogit/objects/" ^ (Digest.to_hex _h ));;
 
 (*a partir dici on est pas sur que ca marche bien*)
 (*Semble marcher mais a des soucis avec dune a cause du répertoire courant*)
@@ -58,7 +58,7 @@ let read_text_object _h =
   close_in ic;
   (*on fini le taff et return la chaine qui correspond a tout le contenue du fichier*)
   s
-  end
+  end;;
 
 (*on l'uitilise  pour convertir "repo/" sous forme de liste afin d'itérer desssus*)
 (*let dir_to_list dir =
@@ -75,21 +75,21 @@ let read_file _path = (*On lit le fichier et on le renvoi sous forme de string*)
   let len = in_channel_length ic in
   let s = really_input_string ic len in
   close_in ic;
-  s
+  s;;
 
 let array_to_list arr = (*On converti un array en liste*)
   let rec loop acc = function
     | [] -> acc
     | hd :: tl -> loop (hd :: acc) tl
   in
-  loop [] (Array.to_list arr)
+  loop [] (Array.to_list arr);;
 
 let read_dir _path = (*On lit le dir et on le renvoi sous forme de liste de string*)
 let contenu = array_to_list (Sys.readdir _path) in
   let rec loop res acc = match acc with
   | [] -> res
   | hd::tl -> if (String.get hd 0 <> '.') then loop (hd::res) tl else loop res tl
-in loop [] contenu
+in loop [] contenu;;
 
 let rec dir_to_t_object _path = (*On converti un dir en t_object*)
   let rec loop res acc = match acc with
@@ -97,7 +97,7 @@ let rec dir_to_t_object _path = (*On converti un dir en t_object*)
   | hd::tl -> if (Sys.is_directory (Filename.concat _path hd)) then let dirtemp = Directory (dir_to_t_object (Filename.concat _path hd)) in
   loop ((hd, true, hash dirtemp, dirtemp)::res) tl 
   else loop ((hd, false, Digest.file (Filename.concat _path hd), Text (read_file (Filename.concat _path hd)))::res) tl
-in loop [] (read_dir _path)
+in loop [] (read_dir _path);;
 
 let store_work_directory () = (*On va lire le répertoire courant et on va le stocker*)
   let contenu = read_dir "./" in
@@ -109,7 +109,7 @@ let store_work_directory () = (*On va lire le répertoire courant et on va le st
         loop ((store_object (Text (read_file (Filename.concat chem hd))))::res) tl chem
       else loop (hd::res) tl chem
     else loop ((store_object (Directory (dir_to_t_object (Filename.concat chem hd))))::res) (read_dir (Filename.concat chem hd)) (chem ^ hd ^ "/")
-  in loop [] contenu "./"
+  in loop [] contenu "./";;
 
 let dir_file_in_list _h = (*On va convertir le contenu du fichier en liste*)
   if is_known _h then
@@ -119,7 +119,7 @@ let dir_file_in_list _h = (*On va convertir le contenu du fichier en liste*)
       | hd::tl -> let tmp = String.split_on_char ';' hd in
         loop ((List.nth tmp 0, List.nth tmp 1, List.nth tmp 2)::res) tl
     in loop [] (String.split_on_char '\n' file)
-  else failwith "Le fichier n'existe pas"
+  else failwith "Le fichier n'existe pas";;
 
 let rec read_directory_object _h = (*On va lire le fichier et on va le stocker*)
   let rec loop res aux chem = 
@@ -129,12 +129,12 @@ let rec read_directory_object _h = (*On va lire le fichier et on va le stocker*)
         loop ((nom, true, Digest.from_hex hash, read_directory_object (Digest.from_hex hash))::res) tl (chem^nom^"/") 
       else
         loop ((nom, false, Digest.from_hex hash, Text(read_text_object (Digest.from_hex hash)))::res) tl chem
-    in loop [] (dir_file_in_list _h) "./" (*obj non reconnu*) 
+    in loop [] (dir_file_in_list _h) "./";; (*obj non reconnu*) 
 
 let clean_work_directory () = 
   let err=Sys.command("find ./ -type f -name \"[^.]*\" -delete") in
   if err <> 0 then failwith "erreur" else
-  ()
+  ();;
 
 (** écrit dans repo/ 
     tous les fichiers mentionnés dans l'objet passé en paramètre 
@@ -148,7 +148,7 @@ let restore_work_directory _obj =
       begin
         let err = Sys.command ("mkdir " ^ nom) in
         if err <> 0 then failwith "erreur" else
-        loop tl
+        match obj with | Directory obj -> loop obj | _ -> failwith "erreur"
       end
     else
       begin
@@ -156,7 +156,7 @@ let restore_work_directory _obj =
         if err <> 0 then failwith "erreur" else
         loop tl
       end
-  in loop (match _obj with | Directory dir -> dir | _ -> failwith "not a directory")
+  in loop (match _obj with | Directory dir -> dir | _ -> failwith "not a directory");;
 
 (*
 let merge_work_directory_I _obj = failwith "not implemented"
