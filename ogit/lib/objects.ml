@@ -144,21 +144,23 @@ let clean_work_directory () =
 let restore_work_directory _obj = 
   (*voir marie ou lozes car on ne comprend pas comment fix le soucis 
     on n'arrive pas a recrer les sous doss et les fichiers*)  
-  let rec loop aux = match aux with
+  let rec loop aux chem = match aux with
     | [] -> ()
     | (nom, is_dir, _, obj)::tl -> if is_dir then
       begin
-        let err = Sys.command ("mkdir " ^ nom) in
+        let err = Sys.command ("mkdir " ^ (chem^nom)) in
         if err <> 0 then failwith "erreur" else
-        match obj with | Directory obj -> loop obj | _ -> failwith "erreur"
-      end
+        loop (match obj with | Directory obj1 -> obj1 | _ -> failwith "Case not possible") (chem^nom^"/");
+        loop tl chem
+        end
     else
       begin
-        let err = Sys.command ("printf \"%s\" \"" ^ (match obj with | Text txt -> txt | _ -> failwith "warn not possible") ^ "\" > " ^ nom) in
+        let err = Sys.command ("printf \"%s\" \"" ^ (match obj with | Text txt -> txt | _ -> failwith "warn not possible") ^ "\" > " ^ chem ^ nom) in
         if err <> 0 then failwith "erreur" else
-        loop tl
+        loop tl chem
       end
-  in loop (match _obj with | Directory dir -> dir | _ -> failwith "not a directory")
+  in loop (match _obj with | Directory dir -> dir | _ -> failwith "not a directory") "./"
+
 
 (*Lorsque que l’on merge l’état d’un commit X à l’état actuel les modifications concurrentes doivent être fusionnées.
 Si un fichier  “fich” est présent dans X mais pas présent dans l’état actuel, on l’ajoute dans l’état actuel
@@ -173,8 +175,8 @@ Sinon Si hash du fichier _obj different état actuel alors erreur conflit creer 
 Sinon rien
 *)
 let merge_work_directory_I (_obj:t) : bool = 
-  let head = read_file "./.git/HEAD" in
-  
+  (* let head = read_file "./.git/HEAD" *)
+  failwith "not implemented"
 
 
 (*hash obj -> is_know -> if false -> store_object*)
@@ -188,3 +190,4 @@ Demande prof :
 - Comment runtest dune "name_test" ?
 - Est ce qu'on doit compiler le projet avec ocamlc ?
 *)
+

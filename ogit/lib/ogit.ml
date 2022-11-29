@@ -30,4 +30,3 @@ let main =
     
 
 let () = main
-(*Demander marie pk commandes pa reconnu et quesquil faut faire de plus car la on ne voit aps *)
