@@ -41,11 +41,11 @@ let better_hash _hash =
 let ogit_checkout _hash = 
 (*Ouvrir logs du hash, lire le fichier, parcourir tout et remplacer*)
   let hashtemp=better_hash _hash in
-  if Sys.file_exists( ".ogit/logs/" ^_hashtemp) then
-    let actualCommit = Logs.read_commit _hashtemp in
+  if Sys.file_exists( ".ogit/logs/" ^hashtemp) then
+    let actualCommit = Logs.read_commit hashtemp in
     let _obj = Objects.read_directory_object actualCommit.content in
     let _ = Objects.restore_work_directory _obj
-    in Logs.set_head [_hashtemp]
+    in Logs.set_head [hashtemp]
   else failwith "Hash inconnu"
 
 let ogit_log () = 
@@ -56,7 +56,13 @@ let ogit_log () =
       let _ = print_endline ("commit " ^ Digest.to_hex(commit.content) ^ " " ^ commit.message) in
       aux (commit.parents)
   in aux (Logs.get_head ())
+  
 
-(*let ogit_merge _hash = 
-    let hashtemp=better_hash _hash in
+(*
+voir marie ou lozes pour savoir ou placer better hash, merge2, log graph dans les fichiers
+voir aussi bug du nth et du failure dans read_directory_object
+
+
+let ogit_merge _hash = 
+    let hashtemp = better_hash _hash in
 *)

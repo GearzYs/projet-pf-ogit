@@ -77,15 +77,8 @@ let read_file _path = (*On lit le fichier et on le renvoi sous forme de string*)
   close_in ic;
   s
 
-let array_to_list arr = (*On converti un array en liste*)
-  let rec loop acc = function
-    | [] -> acc
-    | hd :: tl -> loop (hd :: acc) tl
-  in
-  loop [] (Array.to_list arr)
-
 let read_dir _path = (*On lit le dir et on le renvoi sous forme de liste de string*)
-  let contenu = array_to_list (Sys.readdir _path) in
+  let contenu = List.rev (Array.to_list (Sys.readdir _path)) in
     let rec loop res acc = match acc with
     | [] -> res
     | hd::tl -> if (String.get hd 0 <> '.') then loop (hd::res) tl else loop res tl
@@ -163,10 +156,27 @@ let restore_work_directory _obj =
 (*
 let merge_work_directory_I = failwith "TODO"
 *)
+
+let rec repeatString s n =
+  if n = 0 then "" else s ^ repeatString s (n - 1)
+
+let log_graph () =
+  let logs = Sys.readdir ".ogit/logs" in (*On récupère les logs*)
+  let open_all_files = Array.map (fun x -> read_file (".ogit/logs/" ^ x)) logs in (*On ouvre tous les fichiers*)
+  let hashs = Array.map (fun x -> List.hd(List.rev(String.split_on_char '\n' x))) open_all_files in (*On récupère les hashs*)
+  let finalcomments = Array.map (fun x -> List.nth (List.rev(String.split_on_char '\n' x)) 1) open_all_files in (*On récupère les commentaires*)
+  let finalhashs = Array.map (fun x -> String.sub x 0 7) hashs in (*On récupère les 7 premiers caractères des hashs*)
+  let branch = Array.map (fun x -> if (List.length (String.split_on_char '\n' x))=4 then 0 else (List.length (String.split_on_char '\n' x))-4 ) open_all_files in (*On récupère les lignes 2 des fichiers*)
+  (*let isMerge = liste si merge = true sinon false*)
+  let rec result finalcom finalhash merge i res = (*On crée le résultat*)
+    if i = Array.length logs then res
+    else result finalcom finalhash merge (i+1) (res ^ "*" ^ (repeatString "\t" merge.(i)) ^ finalhash.(i) ^ " : " ^ finalcom.(i) ^ "\n" )
+  in result finalhashs finalcomments branch 0 "";;
+
 (*
 let read_local_version () =
   let head = read_file ".ogit/HEAD" in
-  let logs = read_file (".ogit/logs/"^head) in
+  let logs = read_file (".ogit/logs/"^head) in  
   let hash = String.split_on_char '\n' logs in
   let object1 = read_directory_object (Digest.from_hex (List.nth (List.rev hash) 0)) in
   object1;;
