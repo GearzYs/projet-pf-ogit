@@ -160,7 +160,10 @@ let restore_work_directory _obj =
         loop tl chem
       end
   in loop (match _obj with | Directory dir -> dir | _ -> failwith "not a directory") "./"
-
+(*
+let merge_work_directory_I = failwith "TODO"
+*)
+(*
 let read_local_version () =
   let head = read_file ".ogit/HEAD" in
   let logs = read_file (".ogit/logs/"^head) in
@@ -174,7 +177,6 @@ let merge_work_directory_I _obj =
   let local = read_local_version () in
   match _obj with
 
-(*
 let merge_work_directory_I _obj = failwith "not implemented"
 _obj1 = _obj
 _obj2 = read directory (4eme ligne de logs du head)
@@ -186,7 +188,7 @@ match _obj with
 |(nom, is_dir, _, obj)::tl -> if is_dir then
 voir lozes ou marie comment faire
 
-(*Lorsque que l’on merge l’état d’un commit X à l’état actuel les modifications concurrentes doivent être fusionnées.
+Lorsque que l’on merge l’état d’un commit X à l’état actuel les modifications concurrentes doivent être fusionnées.
 Si un fichier  “fich” est présent dans X mais pas présent dans l’état actuel, on l’ajoute dans l’état actuel
 Si un fichier  “fich” est présent dans X et dans l’état actuel, avec le même contenu il ne se passe rien
 Si un fichier “fich” est présent dans X et dans l’état actuel, mais avec des contenus différents, on obtient un conflit.
@@ -198,20 +200,3 @@ Etape SI => Si nom de fichier _obj non connu dans l'état actuel, importer le fi
 Sinon Si hash du fichier _obj different état actuel alors erreur conflit creer fichier cl (local) cr (remote) et inserer dans directory 
 Sinon rien
 *)
-let merge_work_directory_I (_obj:t) : bool = 
-  (* let head = read_file "./.git/HEAD" *)
-  failwith "not implemented"
-
-
-(*hash obj -> is_know -> if false -> store_object*)
-      
-    
-      
-(*
-Demande prof :
-- store_work_directory renvoie quel hash ?
-- Comment on fait pour lancer une fonction d'un autre module ?
-- Comment runtest dune "name_test" ?
-- Est ce qu'on doit compiler le projet avec ocamlc ?
-*)
-
