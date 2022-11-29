@@ -132,7 +132,7 @@ let rec read_directory_object _h = (*On va lire le fichier et on va le stocker*)
     in loop [] (dir_file_in_list _h) "./" (*obj non reconnu*) 
 
 let clean_work_directory () = 
-  let err=Sys.command("find ./ -type f -name \"[^.]*\" -delete") in
+  let err=Sys.command("find . -not -path \"*/.*\" -delete") in
   if err <> 0 then failwith "erreur" else
   ()
 
