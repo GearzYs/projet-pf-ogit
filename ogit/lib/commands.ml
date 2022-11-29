@@ -21,16 +21,32 @@ let ogit_commit _msg =
   let tmp = Logs.make_commit _msg (Digest.to_hex(Objects.store_work_directory ())) in
   let head = Logs.store_commit tmp in
   Logs.set_head [head]
-
+  
+let better_hash _hash =
+  let len = String.length _hash in
+  if len < 4 then failwith "Hash must be > 4 characters"
+  else
+    let hashlist = Sys.readdir ".ogit/objects" in
+    let rec aux i res=
+      if i = Array.length hashlist then match (List.length res) with
+        | 0 -> failwith "No match found"
+        | 1 -> List.hd res
+        | _ -> failwith "Multiple matches found"
+      else
+        let hash = hashlist.(i) in
+        if String.sub hash 0 len = _hash then aux (i+1) (hash::res)
+        else aux (i+1) res
+    in aux 0 []
+      
 let ogit_checkout _hash = 
 (*Ouvrir logs du hash, lire le fichier, parcourir tout et remplacer*)
-  if Sys.file_exists( ".ogit/logs/" ^_hash) then
-    let actualCommit = Logs.read_commit _hash in
+  let hashtemp=better_hash _hash in
+  if Sys.file_exists( ".ogit/logs/" ^_hashtemp) then
+    let actualCommit = Logs.read_commit _hashtemp in
     let _obj = Objects.read_directory_object actualCommit.content in
     let _ = Objects.restore_work_directory _obj
-    in Logs.set_head [_hash]
-
-  else raise (Failure "Hash inconnu")
+    in Logs.set_head [_hashtemp]
+  else failwith "Hash inconnu"
 
 let ogit_log () = 
   let rec aux hd = 
@@ -40,8 +56,7 @@ let ogit_log () =
       let _ = print_endline ("commit " ^ Digest.to_hex(commit.content) ^ " " ^ commit.message) in
       aux (commit.parents)
   in aux (Logs.get_head ())
-  
 
-
-
-(*let ogit_merge _hash = failwith "TODO"*)
+(*let ogit_merge _hash = 
+    let hashtemp=better_hash _hash in
+*)
