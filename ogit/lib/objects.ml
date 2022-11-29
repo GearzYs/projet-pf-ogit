@@ -158,8 +158,29 @@ let restore_work_directory _obj =
       end
   in loop (match _obj with | Directory dir -> dir | _ -> failwith "not a directory");;
 
+let read_local_version () =
+  let head = read_file ".ogit/HEAD" in
+  let logs = read_file (".ogit/logs/"^head) in
+  let hash = String.split_on_char '\n' logs in
+  let object1 = read_directory_object (Digest.from_hex (List.nth (List.rev hash) 0)) in
+  object1;;
+
+let work = read_directory_object (Digest.from_hex (store_work_directory ()));;
+
+let merge_work_directory_I _obj =
+  let local = read_local_version () in
+  match _obj with
+
 (*
 let merge_work_directory_I _obj = failwith "not implemented"
+_obj1 = _obj
+_obj2 = read directory (4eme ligne de logs du head)
+hash _obj
+si le hash est connu, on ne fait rien
+match _obj with
+| Directory dir -> match dir with
+|[] -> ()
+|(nom, is_dir, _, obj)::tl -> if is_dir then
 voir lozes ou marie comment faire
 *)
 
