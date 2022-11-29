@@ -161,7 +161,6 @@ let restore_work_directory _obj =
       end
   in loop (match _obj with | Directory dir -> dir | _ -> failwith "not a directory") "./"
 
-<<<<<<< HEAD
 let read_local_version () =
   let head = read_file ".ogit/HEAD" in
   let logs = read_file (".ogit/logs/"^head) in
@@ -186,7 +185,6 @@ match _obj with
 |[] -> ()
 |(nom, is_dir, _, obj)::tl -> if is_dir then
 voir lozes ou marie comment faire
-=======
 
 (*Lorsque que l’on merge l’état d’un commit X à l’état actuel les modifications concurrentes doivent être fusionnées.
 Si un fichier  “fich” est présent dans X mais pas présent dans l’état actuel, on l’ajoute dans l’état actuel
@@ -199,7 +197,6 @@ Etape 2 => Comparer le type t _obj donné en paramètre avec le type T qu'on vie
 Etape SI => Si nom de fichier _obj non connu dans l'état actuel, importer le fichier
 Sinon Si hash du fichier _obj different état actuel alors erreur conflit creer fichier cl (local) cr (remote) et inserer dans directory 
 Sinon rien
->>>>>>> 7082367b88081af45989dc9d823744f22d41d180
 *)
 let merge_work_directory_I (_obj:t) : bool = 
   (* let head = read_file "./.git/HEAD" *)
