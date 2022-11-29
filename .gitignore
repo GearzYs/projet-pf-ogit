@@ -2,3 +2,4 @@ _build/*
 .ogit/*
 ogit/lib/test.ml
 ogit/test/objects/test_objects.ml
+repo/*
