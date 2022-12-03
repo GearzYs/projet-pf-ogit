@@ -21,5 +21,5 @@ val ogit_log : unit -> unit
 
 (** fusione l'état actuel du repo avec l'état indiqué (hash hexadécimal).
     Une exception est levée si un conflit est présent, si le hash est inconnu ou 
-    si l'état fuisionné est ancêtre de l'état actuel (ou inversement). **) 
-(*val ogit_merge : string -> unit*)
+    si l'état fusionné est ancêtre de l'état actuel (ou inversement). **) 
+val ogit_merge : string -> unit

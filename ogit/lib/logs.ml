@@ -33,6 +33,7 @@ let get_head () =
         !l
     with End_of_file -> close_in ic; List.rev !l 
 
+(* /!\ PEUT ÊTRE CASSER, VERIF SUR PC KHALIL OU FIX SI PAS BON*)
 let make_commit _s _h =
     let head = get_head () in
     let objfile = open_in (".ogit/objects/" ^ _h) in
