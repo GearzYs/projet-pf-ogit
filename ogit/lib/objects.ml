@@ -193,11 +193,25 @@ let merge_work_directory_I _obj =
   let rec loop path remote = match remote with
     | Directory d -> 
       if not (Sys.file_exists path) then
-        Sys.mkdir path;
-      List.iter (fun (name, is_dir, _hash, obj) -> loop (Filename.concat path name) obj) d
+        Sys.command ("mkdir " ^ path) |> ignore;
+      List.iter (fun (name, _, _hash, obj) -> loop (Filename.concat path name) obj) d
     | Text t -> if (Sys.file_exists path) then
       let local = (read_file path) in
-
+          if local <> t then
+            begin
+              write_to_file (path ^ "..cl") local;
+              write_to_file (path ^ "..cr") t;
+              Sys.remove path;
+              Printf.printf "Conflict on %s\n" path;
+              no_conflict := false;
+            end
+          else
+            write_to_file path t
+          in begin
+            loop "." _obj;
+            if not !no_conflict then print_string "Merge failed\n";
+            !no_conflict
+          end;;
 
 
 (*

@@ -57,12 +57,12 @@ let ogit_log () =
       aux (commit.parents)
   in aux (Logs.get_head ())
   
-
-(*
-voir marie ou lozes pour savoir ou placer better hash, merge2, log graph dans les fichiers
-voir aussi bug du nth et du failure dans read_directory_object
-
-
 let ogit_merge _hash = 
     let hashtemp = better_hash _hash in
-*)
+    (*List.iter (check_parent hashtemp) (Logs.get_head ());
+      Voir comment faire ça / voir son utilité*)
+    let actualCommit = Logs.read_commit hashtemp in
+        Logs.set_head ((Logs.get_head() ) @ actualCommit.parents);
+        if Objects.merge_work_directory_I (Objects.read_directory_object actualCommit.content) then
+          ogit_commit ("Merge " ^ hashtemp)
+        else failwith "Merge impossible"

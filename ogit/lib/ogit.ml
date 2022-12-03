@@ -2,6 +2,8 @@
     les commandes correspondantes (cf https://v2.ocaml.org/api/Arg.html) **)
 
 
+(*Demander prof comment faire ça *)
+open Ogitlib
 let ogit_root = "../ogit"
 let verbose = ref false
 let argument_donne = ref ""
@@ -10,11 +12,11 @@ let set_argument_donne s = argument_donne := s
 let set_message s = commit_message := s
 let check s = match s with 
     (*Ne trouve pas le module command*)
-    | "init" -> (*Commands.ogit_init ()*) print_endline "init"
-    | "commit" -> (*Commands.ogit_commit msg ()*) print_endline "commit"
-    | "checkout" -> (*Commands.ogit_checkout msg ()*) print_endline "checkout"
-    | "log" -> (*Commands.ogit_log ()*) print_endline "log"
-    | "merge" -> failwith "Not implemented yet"
+    | "init" -> Commands.ogit_init ()
+    | "commit" -> Commands.ogit_commit !commit_message
+    | "checkout" -> Commands.ogit_checkout !argument_donne
+    | "log" -> Commands.ogit_log ()
+    | "merge" -> Commands.ogit_merge !argument_donne
     | _ -> failwith "Command not found"
 
 let main =
