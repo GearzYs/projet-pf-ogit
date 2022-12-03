@@ -173,7 +173,7 @@ let log_graph () =
     else result finalcom finalhash merge (i+1) (res ^ "*" ^ (repeatString "\t" merge.(i)) ^ finalhash.(i) ^ " : " ^ finalcom.(i) ^ "\n" )
   in result finalhashs finalcomments branch 0 "";;
 
-(*
+
 let read_local_version () =
   let head = read_file ".ogit/HEAD" in
   let logs = read_file (".ogit/logs/"^head) in  
@@ -183,10 +183,24 @@ let read_local_version () =
 
 let work = read_directory_object (Digest.from_hex (store_work_directory ()));;
 
+let write_to_file path msg = 
+  let err = Sys.command("printf \"%s\" \"" ^ msg ^ "\" > " ^ path) in
+  if err <> 0 then failwith "erreur" else
+  ();;
+  
 let merge_work_directory_I _obj =
-  let local = read_local_version () in
-  match _obj with
+  let no_conflict = ref true in
+  let rec loop path remote = match remote with
+    | Directory d -> 
+      if not (Sys.file_exists path) then
+        Sys.mkdir path;
+      List.iter (fun (name, is_dir, _hash, obj) -> loop (Filename.concat path name) obj) d
+    | Text t -> if (Sys.file_exists path) then
+      let local = (read_file path) in
 
+
+
+(*
 let merge_work_directory_I _obj = failwith "not implemented"
 _obj1 = _obj
 _obj2 = read directory (4eme ligne de logs du head)
@@ -196,8 +210,8 @@ match _obj with
 | Directory dir -> match dir with
 |[] -> ()
 |(nom, is_dir, _, obj)::tl -> if is_dir then
-voir lozes ou marie comment faire
-
+voir lozes ou marie comment faire*)
+(*
 Lorsque que l’on merge l’état d’un commit X à l’état actuel les modifications concurrentes doivent être fusionnées.
 Si un fichier  “fich” est présent dans X mais pas présent dans l’état actuel, on l’ajoute dans l’état actuel
 Si un fichier  “fich” est présent dans X et dans l’état actuel, avec le même contenu il ne se passe rien
