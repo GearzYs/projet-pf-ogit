@@ -20,8 +20,12 @@ let date_fm _d =
 
 let set_head _l =
     let oc = open_out ".ogit/HEAD" in
-    List.iter (fun x -> Printf.fprintf oc "%s\n" (Digest.to_hex x)) _l;
-    close_out oc
+    let newlist = List.map (fun x -> Digest.to_hex x) _l in
+    let result = String.concat "\n" newlist in
+    begin
+        output_string oc (String.trim result);
+        close_out oc
+    end
 
 let get_head () =
     let ic = open_in ".ogit/HEAD" in
@@ -34,11 +38,15 @@ let get_head () =
     with End_of_file -> close_in ic; List.rev !l 
 
 (* /!\ PEUT ÊTRE CASSER, VERIF SUR PC KHALIL OU FIX SI PAS BON*)
+let check_head ()=
+    let head = get_head () in match head with
+    | [] -> [Digest.string ""]
+    | _ -> head
+
 let make_commit _s _h =
-    let head = get_head () in
-    let objfile = open_in (".ogit/objects/" ^ _h) in
+    let head = check_head () in
     let d = Unix.time () in
-    let c = Digest.string (String.trim(String.concat "\n" (put_file_in_list objfile))) in
+    let c = Objects.store_work_directory () in
     {parents = head; date = d; message = _s; content = c}
 
 (*A finir quand Objects.store_work_directory sera fini 
@@ -50,16 +58,15 @@ let init_commit () =
     {parents = p; date = d; message = "init commit"; content = Objects.store_work_directory ()}
 
 let store_commit _c =
-    let oc = open_out (".ogit/logs/" ^ (Digest.to_hex _c.content)) in
     (*List.iter = List.map mais en appliquant directement sur la fonction en paramètre et return [] aulieu de return une new list*)
     (*Important car le typage de la fonction n'est pas bon sans le List.iter*)
-    List.iter (fun x -> Printf.fprintf oc "%s\n" (Digest.to_hex x)) _c.parents;
-    Printf.fprintf oc "%s\n" (date_fm _c.date);
-    Printf.fprintf oc "%s\n" _c.message;
-    Printf.fprintf oc "%s" (Digest.to_hex _c.content);
-    close_out oc;
-    _c.content
-
+    let temp = List.map (fun x -> Digest.to_hex x) _c.parents in
+    let result = [String.concat ";" temp;date_fm _c.date;_c.message;Digest.to_hex _c.content] in
+    let name = Digest.to_hex(Digest.string ((String.trim (String.concat "\n" result)))) in
+    let err = Sys.command ("printf \"" ^ (String.trim (String.concat "\n" result)) ^ "\" > .ogit/logs/" ^ name) in
+    if err = 0 then Digest.from_hex name else "error"
+    
+    
 let convert_date_fm_to_timestamp _s =
     let l = String.split_on_char '-' _s in
     let hour = String.split_on_char ':' (List.nth l 0) in
@@ -80,9 +87,14 @@ let l = put_file_in_list ic in
 let c = Digest.from_hex (List.nth l 0) in
 let m = List.nth l 1 in
 let d = convert_date_fm_to_timestamp (List.nth l 2) in
-let p = ref (List.rev((List.init (List.length l - 3) (fun x -> Digest.from_hex (List.nth l (x+3)))))) in
+let p = ref (List.map (fun x -> Digest.from_hex x) (String.split_on_char ';' (List.nth l 3))) in
 {parents = !p; date = d; message = m; content = c}
 
 (*Demander Lozes si utile
 let clear_logs ()= let err=Sys.command "rm -rf main/.ogit/logs/* && rm -rf main/.ogit/HEAD" in 
 if err<>0 then failwith "clear_logs failed";;*)
+
+
+(*
+dans logs si ya plusieurs parents alors ils sont sur la même ligne et donc separée par un ";"   
+*)

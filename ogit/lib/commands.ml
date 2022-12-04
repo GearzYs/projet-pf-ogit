@@ -26,7 +26,7 @@ let better_hash _hash =
   let len = String.length _hash in
   if len < 4 then failwith "Hash must be > 4 characters"
   else
-    let hashlist = Sys.readdir ".ogit/objects" in
+    let hashlist = Sys.readdir ".ogit/logs" in
     let rec aux i res=
       if i = Array.length hashlist then match (List.length res) with
         | 0 -> failwith "No match found"
@@ -58,11 +58,21 @@ let ogit_log () =
   in aux (Logs.get_head ())
   
 let ogit_merge _hash = 
-    let hashtemp = better_hash _hash in
+    let hashtemp = Digest.from_hex (better_hash _hash) in
     (*List.iter (check_parent hashtemp) (Logs.get_head ());
       Voir comment faire ça / voir son utilité*)
     let actualCommit = Logs.read_commit hashtemp in
         Logs.set_head ((Logs.get_head() ) @ actualCommit.parents);
         if Objects.merge_work_directory_I (Objects.read_directory_object actualCommit.content) then
-          ogit_commit ("Merge " ^ hashtemp)
+          ogit_commit ("Merge de " ^ (Digest.to_hex hashtemp)) (*Message du commit = Merge de <son hash>*)
         else failwith "Merge impossible"
+
+let ogit_merge_II _hash = 
+  let hashtemp = Digest.from_hex (better_hash _hash) in
+  (*List.iter (check_parent hashtemp) (Logs.get_head ());
+    Voir comment faire ça / voir son utilité*)
+  let actualCommit = Logs.read_commit hashtemp in
+      Logs.set_head ((Logs.get_head() ) @ actualCommit.parents);
+      if Objects.merge_work_directory_II (Objects.read_directory_object actualCommit.content) then
+        ogit_commit ("Merge de " ^ (Digest.to_hex hashtemp)) (*Message du commit = Merge de <son hash>*)
+      else failwith "Merge impossible"

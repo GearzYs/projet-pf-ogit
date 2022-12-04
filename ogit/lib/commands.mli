@@ -23,3 +23,7 @@ val ogit_log : unit -> unit
     Une exception est levée si un conflit est présent, si le hash est inconnu ou 
     si l'état fusionné est ancêtre de l'état actuel (ou inversement). **) 
 val ogit_merge : string -> unit
+
+(** Utilise mergeII **)
+val ogit_merge_II : string -> unit
+

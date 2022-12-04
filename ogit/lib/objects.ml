@@ -153,27 +153,8 @@ let restore_work_directory _obj =
         loop tl chem
       end
   in loop (match _obj with | Directory dir -> dir | _ -> failwith "not a directory") "./"
+
 (*
-let merge_work_directory_I = failwith "TODO"
-*)
-
-let rec repeatString s n =
-  if n = 0 then "" else s ^ repeatString s (n - 1)
-
-let log_graph () =
-  let logs = Sys.readdir ".ogit/logs" in (*On récupère les logs*)
-  let open_all_files = Array.map (fun x -> read_file (".ogit/logs/" ^ x)) logs in (*On ouvre tous les fichiers*)
-  let hashs = Array.map (fun x -> List.hd(List.rev(String.split_on_char '\n' x))) open_all_files in (*On récupère les hashs*)
-  let finalcomments = Array.map (fun x -> List.nth (List.rev(String.split_on_char '\n' x)) 1) open_all_files in (*On récupère les commentaires*)
-  let finalhashs = Array.map (fun x -> String.sub x 0 7) hashs in (*On récupère les 7 premiers caractères des hashs*)
-  let branch = Array.map (fun x -> if (List.length (String.split_on_char '\n' x))=4 then 0 else (List.length (String.split_on_char '\n' x))-4 ) open_all_files in (*On récupère les lignes 2 des fichiers*)
-  (*let isMerge = liste si merge = true sinon false*)
-  let rec result finalcom finalhash merge i res = (*On crée le résultat*)
-    if i = Array.length logs then res
-    else result finalcom finalhash merge (i+1) (res ^ "*" ^ (repeatString "\t" merge.(i)) ^ finalhash.(i) ^ " : " ^ finalcom.(i) ^ "\n" )
-  in result finalhashs finalcomments branch 0 "";;
-
-
 let read_local_version () =
   let head = read_file ".ogit/HEAD" in
   let logs = read_file (".ogit/logs/"^head) in  
@@ -182,37 +163,110 @@ let read_local_version () =
   object1;;
 
 let work = read_directory_object (Digest.from_hex (store_work_directory ()));;
-
+*)
 let write_to_file path msg = 
   let err = Sys.command("printf \"%s\" \"" ^ msg ^ "\" > " ^ path) in
   if err <> 0 then failwith "erreur" else
   ();;
-  
+
 let merge_work_directory_I _obj =
-  let no_conflict = ref true in
-  let rec loop path remote = match remote with
-    | Directory d -> 
-      if not (Sys.file_exists path) then
-        Sys.command ("mkdir " ^ path) |> ignore;
-      List.iter (fun (name, _, _hash, obj) -> loop (Filename.concat path name) obj) d
-    | Text t -> if (Sys.file_exists path) then
-      let local = (read_file path) in
-          if local <> t then
+  let isConflict = ref true in
+  let rec loop path remote = match remote with (*On va parcourir le remote*)
+    | Directory d -> (*Si c'est un dossier*)
+      if not (Sys.file_exists path) then (*Si le dossier n'existe pas*)
+        let err = Sys.command ("mkdir " ^ path) in (*On le crée*)
+        if err <> 0 then failwith "erreur" (*Si erreur on fail*)
+        else List.iter (fun (name, _, _hash, obj) -> loop (Filename.concat path name) obj) d (*On parcours le dossier*)
+    | Text t -> if (Sys.file_exists path) then (*Si le fichier existe*)
+      let local = (read_file path) in (*On lit le fichier local*)
+          if local <> t then (*Si le fichier local est différent du fichier distant*)
             begin
-              write_to_file (path ^ "..cl") local;
-              write_to_file (path ^ "..cr") t;
-              Sys.remove path;
-              Printf.printf "Conflict on %s\n" path;
-              no_conflict := false;
+              write_to_file (path ^ "..cl") local; (*On écrit le fichier local dans un fichier temporaire*)
+              write_to_file (path ^ "..cr") t; (*On écrit le fichier distant dans un fichier temporaire*)
+              Sys.remove path; (*On supprime le fichier local*)
+              Printf.printf "Conflict on %s\n" path; (*On affiche le conflit*)
+              isConflict := false;
             end
           else
-            write_to_file path t
+            write_to_file path t (*On écrit le fichier distant*)
           in begin
-            loop "." _obj;
-            if not !no_conflict then print_string "Merge failed\n";
-            !no_conflict
+            loop "." _obj; (*On parcours le dossier distant*)
+            if not !isConflict then print_string "Merge failed\n"; (*Si il y a eu un conflit on affiche un message d'erreur*)
+            !isConflict (*On retourne si il y a eu un conflit ou non*)
           end;;
 
+let merge_work_directory_II _obj = (*use diff3*)
+  let isConflict = ref true in
+  let rec loop path remote = match remote with (*on parcourt l'arborescence*)
+    | Directory d -> (*si c'est un dossier*)
+      if not (Sys.file_exists path) then (*si le dossier n'existe pas*)
+        let err = Sys.command ("mkdir " ^ path) in (*on le crée*)
+        if err <> 0 then failwith "erreur" (*si erreur on fail*)
+      else List.iter (fun (name, _, _hash, obj) -> loop (Filename.concat path name) obj) d (*on parcours les sous-dossiers*)
+    | Text t -> if (Sys.file_exists path) then (*si le fichier existe*)
+      let local = (read_file path) in (*on lit le fichier local*)
+          if local <> t then (*si le fichier local est différent du fichier remote*)
+            begin (*on crée un fichier avec les 3 versions*)
+              write_to_file (path ^ "..cl") local; (*local*)
+              write_to_file (path ^ "..cr") t; (*remote*)
+              Sys.remove path; (*on supprime le fichier local*)
+              let err = Sys.command ("diff3 -m " ^ path ^ "..cl " ^ path ^ "..cr " ^ path ^ "..cr > " ^ path) in (*http://manpagesfr.free.fr/man/man1/diff3.1.html*)
+              (*on utilise diff3 pour créer un fichier avec les 3 versions*)
+              if err <> 0 then failwith "erreur" else
+              ();
+              Sys.remove (path ^ "..cl");
+              Sys.remove (path ^ "..cr");
+              Printf.printf "Conflict on %s\n" path; (*on affiche le conflit*)
+              isConflict := false;
+            end
+          else
+            write_to_file path t (*on écrit le fichier remote*)
+          in begin
+            loop "." _obj;
+            if not !isConflict then print_string "Merge failed\n"; (*si il y a eu un conflit on affiche un message d'erreur*)
+            !isConflict (*On retourne si il y a eu un conflit ou non*)
+          end;;
+
+let rec repeatString s n =
+    if n = 0 then "" else s ^ repeatString s (n - 1)
+
+let index_of elt array = (*On récupère l'index d'un élément dans un tableau*)
+  let loop i = function
+    | [||] -> -1
+    | a when a.(i) = elt -> i
+    | _ -> -1
+  in loop 0 array
+
+let log_graph () =
+  let logs = Sys.readdir ".ogit/logs" in (*On récupère les logs*)
+  let open_all_files = Array.map (fun x -> read_file (".ogit/logs/" ^ x)) logs in (*On ouvre tous les fichiers [|[fichier1];[fichier2]|]*)
+  let hashs = Array.map (fun x -> List.hd(List.rev(String.split_on_char '\n' x))) open_all_files in (*On récupère les hashs*)
+  let finalcomments = Array.map (fun x -> List.nth (List.rev(String.split_on_char '\n' x)) 1) open_all_files in (*On récupère les commentaires*)
+  let finalhashs = Array.map (fun x -> String.sub x 0 7) hashs in (*On récupère les 7 premiers caractères des hashs*)
+  let finalparents = Array.map (fun x -> List.nth (String.split_on_char ';' x) 3) open_all_files in (*On récupère les 7 premiers caractères des parents*)
+  let graph hashs parents comments =
+    let rec loop i =
+      if i = Array.length hashs then ()
+      else
+        let index = index_of hashs.(i) parents in
+        if index = -1 then
+          begin
+            Printf.printf "%s : %s \n" hashs.(i) comments.(i);
+            loop (i+1)
+          end
+        else (*when it's the same parent put a "*" *)
+          begin
+            Printf.printf "%s : %s \n" hashs.(i) comments.(i);
+            Printf.printf "%s" (repeatString " " (String.length hashs.(i) + 2));
+            Printf.printf "%s" (repeatString "|" (String.length parents.(index) + 1));
+            Printf.printf "%s" (repeatString " " (String.length hashs.(index) - String.length parents.(index) + 1));
+            Printf.printf "%s" (repeatString "*" (String.length hashs.(index) + 1));
+            Printf.printf "%s" (repeatString " " (String.length hashs.(i) - String.length hashs.(index) + 1));
+            Printf.printf "%s : %s \n" hashs.(index) comments.(index);
+            loop (i+1)
+          end
+    in loop 0
+  in graph finalhashs finalparents finalcomments;;
 
 (*
 let merge_work_directory_I _obj = failwith "not implemented"
