@@ -230,43 +230,34 @@ let merge_work_directory_II _obj = (*use diff3*)
 let rec repeatString s n =
     if n = 0 then "" else s ^ repeatString s (n - 1)
 
+(*
 let index_of elt array = (*On récupère l'index d'un élément dans un tableau*)
   let loop i = function
     | [||] -> -1
     | a when a.(i) = elt -> i
     | _ -> -1
-  in loop 0 array
+  in loop 0 array*)
+
+(*compteur d'elt des parents et des sous listes de parents*)
+let count elt l = 
+  List.fold 0 (+) (List.map (fun x -> if x = elt then 1 else 0 ) l)
+
+let count_child elt  liste = 
+  List.fold 0 (+) (List.map (count elt) liste)
 
 let log_graph () =
   let logs = Sys.readdir ".ogit/logs" in (*On récupère les logs*)
-  let open_all_files = Array.map (fun x -> read_file (".ogit/logs/" ^ x)) logs in (*On ouvre tous les fichiers [|[fichier1];[fichier2]|]*)
+  let open_all_files = Array.map (fun x -> read_file (".ogit/logs/" ^ x)) logs in (*On ouvre tous les fichiers [|[fichier1];[fichier2]|] dans l'ordre de creation je crois et nn ordre de parenté*)
   let hashs = Array.map (fun x -> List.hd(List.rev(String.split_on_char '\n' x))) open_all_files in (*On récupère les hashs*)
   let finalcomments = Array.map (fun x -> List.nth (List.rev(String.split_on_char '\n' x)) 1) open_all_files in (*On récupère les commentaires*)
   let finalhashs = Array.map (fun x -> String.sub x 0 7) hashs in (*On récupère les 7 premiers caractères des hashs*)
-  let finalparents = Array.map (fun x -> List.nth (String.split_on_char ';' x) 3) open_all_files in (*On récupère les 7 premiers caractères des parents*)
+  let finalparents = Array.map (fun x -> List.hd(String.split_on_char '\n' x)) open_all_files in (* donnne un tableau *)
+  let tab_tab_finalparents = Array.map (String.split_on_char ';') (finalparents) in (*tab de tab contenant les parents, soucis pour iterer c'est relou *)
   let graph hashs parents comments =
-    let rec loop i =
-      if i = Array.length hashs then ()
+    let rec loop index branch pos =  (*b = nb de fils exemple 2 fils augmente de +1 braanche et pos augmente quandd on merge *)
+      if index = Array.length hashs then ()
       else
-        let index = index_of hashs.(i) parents in
-        if index = -1 then
-          begin
-            Printf.printf "%s : %s \n" hashs.(i) comments.(i);
-            loop (i+1)
-          end
-        else (*when it's the same parent put a "*" *)
-          begin
-            Printf.printf "%s : %s \n" hashs.(i) comments.(i);
-            Printf.printf "%s" (repeatString " " (String.length hashs.(i) + 2));
-            Printf.printf "%s" (repeatString "|" (String.length parents.(index) + 1));
-            Printf.printf "%s" (repeatString " " (String.length hashs.(index) - String.length parents.(index) + 1));
-            Printf.printf "%s" (repeatString "*" (String.length hashs.(index) + 1));
-            Printf.printf "%s" (repeatString " " (String.length hashs.(i) - String.length hashs.(index) + 1));
-            Printf.printf "%s : %s \n" hashs.(index) comments.(index);
-            loop (i+1)
-          end
-    in loop 0
-  in graph finalhashs finalparents finalcomments;;
+        
 
 (*
 let merge_work_directory_I _obj = failwith "not implemented"
@@ -291,4 +282,43 @@ Etape 2 => Comparer le type t _obj donné en paramètre avec le type T qu'on vie
 Etape SI => Si nom de fichier _obj non connu dans l'état actuel, importer le fichier
 Sinon Si hash du fichier _obj different état actuel alors erreur conflit creer fichier cl (local) cr (remote) et inserer dans directory 
 Sinon rien
+
+
+
+
+let log_graph () =
+  let logs = Sys.readdir ".ogit/logs" in (*On récupère les logs*)
+  let open_all_files = Array.map (fun x -> read_file (".ogit/logs/" ^ x)) logs in (*On ouvre tous les fichiers [|[fichier1];[fichier2]|]*)
+  let hashs = Array.map (fun x -> List.hd(List.rev(String.split_on_char '\n' x))) open_all_files in (*On récupère les hashs*)
+  let finalcomments = Array.map (fun x -> List.nth (List.rev(String.split_on_char '\n' x)) 1) open_all_files in (*On récupère les commentaires*)
+  let finalhashs = Array.map (fun x -> String.sub x 0 7) hashs in (*On récupère les 7 premiers caractères des hashs*)
+  let finalparents = Array.map (fun x -> List.hd(String.split_on_char '\n' x)) open_all_files in (* donnne un tableau *)
+  let tab_tab_finalparents = Array.map (String.split_on_char ';') (finalparents) in (*tab de tab contenant les parents, soucis pour iterer c'est relou *)
+  (*let tt = [| [|1|]; [|2;3|] |];;
+     tt.(1).(1);;   
+     faire un dico -> hash du commit asssocier a list des hash des parents*)
+  
+  let graph hashs parents comments =
+    let rec loop i branch pos =  (*b = nb de fils exemple 2 fils augmente de +1 braanche et pos augmente quandd on merge *)
+      if i = Array.length hashs then ()
+      else
+        let index = index_of hashs.(i) parents in
+        if index = -1 then
+          begin
+            Printf.printf "%s : %s \n" hashs.(i) comments.(i);
+            loop (i+1)
+          end
+        else (*when it's the same parent put a "*" *)
+          begin
+            Printf.printf "%s : %s \n" hashs.(i) comments.(i);
+            Printf.printf "%s" (repeatString " " (String.length hashs.(i) + 2));
+            Printf.printf "%s" (repeatString "|" (String.length parents.(index) + 1));
+            Printf.printf "%s" (repeatString " " (String.length hashs.(index) - String.length parents.(index) + 1));
+            Printf.printf "%s" (repeatString "*" (String.length hashs.(index) + 1));
+            Printf.printf "%s" (repeatString " " (String.length hashs.(i) - String.length hashs.(index) + 1));
+            Printf.printf "%s : %s \n" hashs.(index) comments.(index);
+            loop (i+1)
+          end
+    in loop 0
+  in graph finalhashs tab_tab_finalparents finalcomments(*utiliser tab_tab_finalparents aulieu  de finalparents*);;
 *)
