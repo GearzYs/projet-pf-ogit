@@ -240,10 +240,14 @@ let index_of elt array = (*On récupère l'index d'un élément dans un tableau*
 
 (*compteur d'elt des parents et des sous listes de parents*)
 let count elt l = 
-  List.fold 0 (+) (List.map (fun x -> if x = elt then 1 else 0 ) l)
+  List.fold_left (fun acc x -> if x = elt then acc + 1 else acc) 0 l
 
-let count_child elt  liste = 
-  List.fold 0 (+) (List.map (count elt) liste)
+let count_child elt liste =
+  let acc = ref 0 in
+  for i = 0 to (List.length liste) - 1 do
+    acc:= !acc + count elt (List.nth liste i)
+  done;
+  !acc
 
 let log_graph () =
   let logs = Sys.readdir ".ogit/logs" in (*On récupère les logs*)
@@ -253,10 +257,10 @@ let log_graph () =
   let finalhashs = Array.map (fun x -> String.sub x 0 7) hashs in (*On récupère les 7 premiers caractères des hashs*)
   let finalparents = Array.map (fun x -> List.hd(String.split_on_char '\n' x)) open_all_files in (* donnne un tableau *)
   let tab_tab_finalparents = Array.map (String.split_on_char ';') (finalparents) in (*tab de tab contenant les parents, soucis pour iterer c'est relou *)
-  let graph hashs parents comments =
+  let graph logs parents comments =
     let rec loop index branch pos =  (*b = nb de fils exemple 2 fils augmente de +1 braanche et pos augmente quandd on merge *)
       if index = Array.length hashs then ()
-      else
+      else 
         
 
 (*

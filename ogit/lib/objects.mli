@@ -39,4 +39,4 @@ val merge_work_directory_I : t -> bool
 val merge_work_directory_II : t -> bool
 
 (* Fait un graph à la manière de git log --graph *)
-val log_graph : unit -> unit
+val log_graph : unit -> string list array

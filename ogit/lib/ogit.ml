@@ -1,11 +1,8 @@
 (** fichier ogit.ml : le coeur de l'exécutable: parse la ligne de commande et appelle
     les commandes correspondantes (cf https://v2.ocaml.org/api/Arg.html) **)
 
-
-(*Demander prof comment faire ça *)
 open Ogitlib
-let ogit_root = "../ogit"
-let verbose = ref false
+let root = "../repo"
 let argument_donne = ref ""
 let commit_message = ref ""
 let set_argument_donne s = argument_donne := s
@@ -17,18 +14,16 @@ let check s = match s with
     | "checkout" -> Commands.ogit_checkout !argument_donne
     | "log" -> Commands.ogit_log ()
     | "merge" -> Commands.ogit_merge !argument_donne
+    | "bettermerge" -> Commands.ogit_merge_II !argument_donne
     | _ -> failwith "Command not found"
 
 let main =
     begin
-        let speclist = [("-v", Arg.Set verbose, "Enables verbose mode");
-                        ("-n", Arg.String (set_argument_donne), "Init | commit | checkout | log | merge ( a ajouter)");
-                        ("-d", Arg.String (set_message), "Messade de commit");]
-                        
-    in let usage_msg = "Ogit "
-    in Arg.parse speclist set_argument_donne usage_msg;
+        Sys.chdir root;
+        let speclist = [("-c | -command", Arg.String (set_argument_donne), "init | commit | checkout | log | merge | bettermerge");
+                        ("-m | -message", Arg.String (set_message), "Message du commit");] in                        
+    in Arg.parse speclist set_argument_donne "Ogit ";
     check !argument_donne
     end
     
-
 let () = main
