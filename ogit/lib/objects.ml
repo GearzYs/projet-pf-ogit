@@ -208,26 +208,10 @@ let merge_work_directory_II _obj = (*use diff3*)
             if not !isConflict then print_string "Merge failed\n"; (*si il y a eu un conflit on affiche un message d'erreur*)
             !isConflict (*On retourne si il y a eu un conflit ou non*)
           end;;
-
-let log hash=
-  let rec aux hd result = 
-  if hd = [] then ()
-  else
-    try 
-      let commit = Logs.read_commit (List.hd hd) in
-      aux (commit.parents) (["commit " ^ Digest.to_hex(List.hd hd) ^ " " ^ commit.message]@result)
-    with _ ->
-      let rec aux2 l2 = match l2 with
-        | [] -> ()
-        | h::t -> begin Printf.printf "%s\n" h; aux2 t end
-      in aux2 (result)
-in aux hash []
-
 (*
 let rec repeatString s n =
     if n = 0 then "" else s ^ repeatString s (n - 1)
 
-(*
 let index_of elt array = (*On récupère l'index d'un élément dans un tableau*)
   let loop i = function
     | [||] -> -1
@@ -236,6 +220,7 @@ let index_of elt array = (*On récupère l'index d'un élément dans un tableau*
   in loop 0 array*)
 
 (*compteur d'elt des parents et des sous listes de parents*)
+
 let count elt l = 
   List.fold_left (fun acc x -> if x = elt then acc + 1 else acc) 0 l
 
@@ -257,36 +242,9 @@ let log_graph () =
   let graph logs parents comments =
     let rec loop index branch pos =  (*b = nb de fils exemple 2 fils augmente de +1 braanche et pos augmente quandd on merge *)
       if index = Array.length hashs then ()
-      else *)
-        
+      else 
 
 (*
-let merge_work_directory_I _obj = failwith "not implemented"
-_obj1 = _obj
-_obj2 = read directory (4eme ligne de logs du head)
-hash _obj
-si le hash est connu, on ne fait rien
-match _obj with
-| Directory dir -> match dir with
-|[] -> ()
-|(nom, is_dir, _, obj)::tl -> if is_dir then
-voir lozes ou marie comment faire*)
-(*
-Lorsque que l’on merge l’état d’un commit X à l’état actuel les modifications concurrentes doivent être fusionnées.
-Si un fichier  “fich” est présent dans X mais pas présent dans l’état actuel, on l’ajoute dans l’état actuel
-Si un fichier  “fich” est présent dans X et dans l’état actuel, avec le même contenu il ne se passe rien
-Si un fichier “fich” est présent dans X et dans l’état actuel, mais avec des contenus différents, on obtient un conflit.
-Deux versions du fichier sont créés : “fich..cl” (version “locale”) et “fich..cr” (version “remote” pour X)
-
-Etape 1 => Convertir le hash de la 4eme ligne du logs indiqué dans Head en type T avec read_directory_object 
-Etape 2 => Comparer le type t _obj donné en paramètre avec le type T qu'on vient de creer
-Etape SI => Si nom de fichier _obj non connu dans l'état actuel, importer le fichier
-Sinon Si hash du fichier _obj different état actuel alors erreur conflit creer fichier cl (local) cr (remote) et inserer dans directory 
-Sinon rien
-
-
-
-
 let log_graph () =
   let logs = Sys.readdir ".ogit/logs" in (*On récupère les logs*)
   let open_all_files = Array.map (fun x -> read_file (".ogit/logs/" ^ x)) logs in (*On ouvre tous les fichiers [|[fichier1];[fichier2]|]*)

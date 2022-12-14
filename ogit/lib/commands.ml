@@ -10,7 +10,7 @@ let ogit_init () =
   else
     let err = Sys.command ("mkdir .ogit && mkdir .ogit/logs && mkdir .ogit/objects && touch .ogit/HEAD") in 
     if err <> 0 then raise (Failure "ogit: error while creating the repository");
-  let _ = Logs.init_commit in ()
+  let _ = Logs.store_commit(Logs.init_commit () ) in ()
   end
 
 let ogit_commit _msg = 
@@ -49,7 +49,18 @@ let ogit_checkout _hash =
   else failwith "Hash inconnu"
 
 let ogit_log () = 
-  Objects.log (Logs.get_head ())
+  let rec aux hd result = 
+    if hd = [] then ()
+    else
+      try 
+        let commit = Logs.read_commit (List.hd hd) in
+        aux (commit.parents) (["commit " ^ Digest.to_hex(List.hd hd) ^ " " ^ commit.message]@result)
+      with _ ->
+        let rec aux2 l2 = match l2 with
+          | [] -> ()
+          | h::t -> begin Printf.printf "%s\n" h; aux2 t end
+        in aux2 (result)
+  in aux (Logs.get_head ()) []
   
 let ogit_merge _hash = 
     let hashtemp = Digest.from_hex (better_hash _hash) in

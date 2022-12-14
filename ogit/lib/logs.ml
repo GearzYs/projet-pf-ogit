@@ -49,17 +49,11 @@ let make_commit _s _h =
     let c = Objects.store_work_directory () in
     {parents = head; date = d; message = _s; content = c}
 
-(*A finir quand Objects.store_work_directory sera fini 
-voir  avec lozes ou marie comment on doit faire    
-*)
 let init_commit () =
     let d = Unix.time () in
-    let p = [] in
-    {parents = p; date = d; message = "init commit"; content = Objects.store_work_directory ()}
+    {parents = [Digest.string ""]; date = d; message = "init commit"; content = Objects.store_work_directory ()}
 
 let store_commit _c =
-    (*List.iter = List.map mais en appliquant directement sur la fonction en paramètre et return [] aulieu de return une new list*)
-    (*Important car le typage de la fonction n'est pas bon sans le List.iter*)
     let temp = List.map (fun x -> Digest.to_hex x) _c.parents in
     let result = [String.concat ";" temp;date_fm _c.date;_c.message;Digest.to_hex _c.content] in
     let name = Digest.to_hex(Digest.string ((String.trim (String.concat "\n" result)))) in
@@ -89,11 +83,7 @@ let d = convert_date_fm_to_timestamp (List.nth l 2) in
 let p = ref (List.map (fun x -> Digest.from_hex x) (String.split_on_char ';' (List.nth l 3))) in
 {parents = !p; date = d; message = m; content = c}
 
-(*Demander Lozes si utile
-let clear_logs ()= let err=Sys.command "rm -rf main/.ogit/logs/* && rm -rf main/.ogit/HEAD" in 
-if err<>0 then failwith "clear_logs failed";;*)
-
-
 (*
-dans logs si ya plusieurs parents alors ils sont sur la même ligne et donc separée par un ";"   
+let clear_logs ()= let err=Sys.command "rm -rf main/.ogit/logs/* && rm -rf main/.ogit/HEAD" in 
+if err<>0 then failwith "clear_logs failed";;
 *)
