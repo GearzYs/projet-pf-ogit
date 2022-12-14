@@ -66,7 +66,6 @@ let store_commit _c =
     let err = Sys.command ("printf \"" ^ (String.trim (String.concat "\n" result)) ^ "\" > .ogit/logs/" ^ name) in
     if err = 0 then Digest.from_hex name else "error"
     
-    
 let convert_date_fm_to_timestamp _s =
     let l = String.split_on_char '-' _s in
     let hour = String.split_on_char ':' (List.nth l 0) in

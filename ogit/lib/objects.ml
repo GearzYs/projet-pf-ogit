@@ -12,22 +12,18 @@ let hashDir _obj =
       | [] -> aux
       (*On force le format main.ml;t;94daecdffe4003a70f02ee8989295b32 et on ajoute tout ça dans une liste par récursion*)
       | (nom, is_dir, digest, _) :: tl -> loop ((nom ^ ";" ^ (if is_dir then "d" else "t") ^ ";" ^ (Digest.to_hex digest)) :: aux) tl
-    (*On doit reverse la liste sinon ça marche pas tas vu*)
+    (*On reverse la liste*)
       in List.rev (loop [] dir)
 
 (*Mtn on va juste digest ce que nous a renvoyé la fonction d'avant*)
 let hash _obj = Digest.string (String.concat "\n" (hashDir _obj))
 
 let is_known _h =
-    (*Chemin général a vérif sinon finito*)
-    (*Pour les test je force ocaml a être dans le dossier de test donné par le prof*)
-    (*decommenter ligne endessous *)
     (*On va vérifier si le fichier existe, on se base sur le nom hash*)
     Sys.file_exists (".ogit/objects/" ^ (Digest.to_hex _h ))
 
-(*a partir dici on est pas sur que ca marche bien*)
-(*Semble marcher mais a des soucis avec dune a cause du répertoire courant*)
-let store_object _obj = match _obj with
+let store_object _obj = (*On va stocker l'objet dans le dossier .ogit/objects*)
+  match _obj with
   | Text txt -> begin 
     (*On execute 2 commandes : Touch "hash de l'obj" + Echo du fichier dont la sortie standart est le fichier qu'on a crée*)
     let err = Sys.command ("cd .ogit/objects && printf \"%s\" \"" ^ txt ^ "\"> " ^(Digest.to_hex (hash _obj))) in
@@ -41,34 +37,20 @@ let store_object _obj = match _obj with
       if err <> 0 then failwith "erreur" else
       Digest.string ""
       end
-    | _ -> begin
+    | _ -> begin (*Si dir non vide*)
       let err = Sys.command ("cd .ogit/objects && printf \"%s\" \"" ^ (String.trim(String.concat "\n" (hashDir _obj))) ^ "\" > " ^ (Digest.to_hex (hash _obj))) in
       if err <> 0 then failwith "erreur" else
       hash _obj
     end
 
-(*Normalement elle marche mais c'est pas neuff, les tests dune ne l'aiment pas*)
-let read_text_object _h = 
+let read_text_object _h = (*On lit le fichier du hash donné et on le renvoi sous forme de string*)
   begin 
-    (*Pour les test je force ocaml a être dans le dossier de test donné par le prof*)
-    (*On ouvre le fichier en lecture binaire hex, je penses que ça peut eviter des soucis avec les accents etc*)
   let ic = open_in (".ogit/objects/" ^ Digest.to_hex _h) in
   let len = in_channel_length ic in
   let s = really_input_string ic len in
   close_in ic;
-  (*on fini le taff et return la chaine qui correspond a tout le contenue du fichier*)
   s
   end
-
-(*on l'uitilise  pour convertir "repo/" sous forme de liste afin d'itérer desssus*)
-(*let dir_to_list dir =
-  let rec loop acc = function
-    | [] -> acc
-    | hd :: tl ->
-      let acc = if (Sys.is_directory hd) then loop acc (Sys.readdir hd |> Array.to_list |> List.map (Filename.concat hd)) else hd :: acc in
-      loop acc tl
-  in
-  loop [] [dir]*)
 
 let read_file _path = (*On lit le fichier et on le renvoi sous forme de string*)
   let ic = open_in _path in
@@ -142,14 +124,14 @@ let restore_work_directory _obj =
     | (nom, is_dir, _, obj)::tl -> if is_dir then
       begin
         let err = Sys.command ("mkdir " ^ (chem^nom)) in
-        if err <> 0 then failwith "erreur" else
+        if err <> 0 then () else
         loop (match obj with | Directory obj1 -> obj1 | _ -> failwith "Case not possible") (chem^nom^"/");
         loop tl chem
         end
     else
       begin
         let err = Sys.command ("printf \"%s\" \"" ^ (match obj with | Text txt -> txt | _ -> failwith "warn not possible") ^ "\" > " ^ chem ^ nom) in
-        if err <> 0 then failwith "erreur" else
+        if err <> 0 then () else
         loop tl chem
       end
   in loop (match _obj with | Directory dir -> dir | _ -> failwith "not a directory") "./"
@@ -227,6 +209,21 @@ let merge_work_directory_II _obj = (*use diff3*)
             !isConflict (*On retourne si il y a eu un conflit ou non*)
           end;;
 
+let log hash=
+  let rec aux hd result = 
+  if hd = [] then ()
+  else
+    try 
+      let commit = Logs.read_commit (List.hd hd) in
+      aux (commit.parents) (["commit " ^ Digest.to_hex(List.hd hd) ^ " " ^ commit.message]@result)
+    with _ ->
+      let rec aux2 l2 = match l2 with
+        | [] -> ()
+        | h::t -> begin Printf.printf "%s\n" h; aux2 t end
+      in aux2 (result)
+in aux hash []
+
+(*
 let rec repeatString s n =
     if n = 0 then "" else s ^ repeatString s (n - 1)
 
@@ -260,7 +257,7 @@ let log_graph () =
   let graph logs parents comments =
     let rec loop index branch pos =  (*b = nb de fils exemple 2 fils augmente de +1 braanche et pos augmente quandd on merge *)
       if index = Array.length hashs then ()
-      else 
+      else *)
         
 
 (*
