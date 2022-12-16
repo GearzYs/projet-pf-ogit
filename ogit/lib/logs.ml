@@ -21,7 +21,7 @@ let date_fm _d =
 let set_head _l =
     let oc = open_out ".ogit/HEAD" in
     let newlist = List.map (fun x -> Digest.to_hex x) _l in
-    let result = String.concat "\n" newlist in
+    let result = String.concat ";" newlist in
     begin
         output_string oc (String.trim result);
         close_out oc
@@ -29,15 +29,10 @@ let set_head _l =
 
 let get_head () =
     let ic = open_in ".ogit/HEAD" in
-    let l = ref [] in
-    try
-        while true do
-            l := (Digest.from_hex (input_line ic))::!l
-        done;
-        !l
-    with End_of_file -> close_in ic; List.rev !l 
+    let l = put_file_in_list ic in
+    let result = List.map (fun x -> Digest.from_hex x) (String.split_on_char ';' (List.nth l 0)) in
+    result
 
-(* /!\ PEUT ÊTRE CASSER, VERIF SUR PC KHALIL OU FIX SI PAS BON*)
 let check_head ()=
     let head = get_head () in match head with
     | [] -> [Digest.string ""]
@@ -82,8 +77,3 @@ let m = List.nth l 1 in
 let d = convert_date_fm_to_timestamp (List.nth l 2) in
 let p = ref (List.map (fun x -> Digest.from_hex x) (String.split_on_char ';' (List.nth l 3))) in
 {parents = !p; date = d; message = m; content = c}
-
-(*
-let clear_logs ()= let err=Sys.command "rm -rf main/.ogit/logs/* && rm -rf main/.ogit/HEAD" in 
-if err<>0 then failwith "clear_logs failed";;
-*)

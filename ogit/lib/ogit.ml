@@ -13,26 +13,16 @@ let check l = match l with
         | "commit" -> Commands.ogit_commit (List.hd tl)
         | "checkout" -> Commands.ogit_checkout (List.hd tl)
         | "log" -> Commands.ogit_log ()
+        | "log_graph" -> Commands.ogit_log_graph ()
         | "merge" -> Commands.ogit_merge (List.hd tl)
         | "bettermerge" -> Commands.ogit_merge_II (List.hd tl)
         | _ -> Printf.printf "Command \"%s\" not found\n" s
 
-let test s = Printf.printf "-- %s\n" s
-
-let rec content_list = function
-    |[]->()
-    |hd::tl -> begin Printf.printf "%s\n" hd;
-    content_list tl end;;
-
 let main =
     begin
         Sys.chdir root;
-        let speclist = [("-c", Arg.Rest_all (set_argument_donne), "init | commit | checkout | log | merge | bettermerge")]
+        let speclist = [("-c", Arg.Rest_all (set_argument_donne), "init | commit | checkout | log | merge | bettermerge | log_graph")]
     in Arg.parse speclist test "Ogit ";
-    Printf.printf "Command\n";
-    content_list !argument_donne;
-    Printf.printf "Message\n";
-    content_list !commit_message;
     check !argument_donne
     end
     
