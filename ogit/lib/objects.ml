@@ -209,6 +209,23 @@ let merge_work_directory_II _obj = (*use diff3*)
             !isConflict (*On retourne si il y a eu un conflit ou non*)
           end;;
 (*
+let log_graph () =
+  let result = ref [] in
+  let rec head = function
+    | [] -> List.iter (Printf.printf "%s\n") !result
+    | h::t -> let rec pparents = function
+                | [] -> ()
+                | h::t ->   
+                try let actualCommit = Logs.read_commit h in 
+              result := [String.sub (Digest.to_hex h) 0 7 ^ " : " ^ actualCommit.message] @ (!result);
+              pparents actualCommit.parents;
+                with _ -> print_string "d41d8cd98f00b204e9800998ecf8427e" ; print_string " "; 
+                print_string "Initial commit"; print_newline(); 
+                pparents t
+              in pparents [h];
+      head t
+  in head (Logs.get_head ())
+
 let rec repeatString s n =
     if n = 0 then "" else s ^ repeatString s (n - 1)
 
@@ -219,7 +236,7 @@ let index_of elt array = (*On récupère l'index d'un élément dans un tableau*
     | _ -> -1
   in loop 0 array*)
 
-(*compteur d'elt des parents et des sous listes de parents*)
+(*compteur d'elt des parents et des sous listes de parents
 
 let count elt l = 
   List.fold_left (fun acc x -> if x = elt then acc + 1 else acc) 0 l
@@ -240,10 +257,11 @@ let log_graph () =
   let finalparents = Array.map (fun x -> List.hd(String.split_on_char '\n' x)) open_all_files in (* donnne un tableau *)
   let tab_tab_finalparents = Array.map (String.split_on_char ';') (finalparents) in (*tab de tab contenant les parents, soucis pour iterer c'est relou *)
   let graph logs parents comments =
+
     let rec loop index branch pos =  (*b = nb de fils exemple 2 fils augmente de +1 braanche et pos augmente quandd on merge *)
       if index = Array.length hashs then ()
       else 
-
+*)
 (*
 let log_graph () =
   let logs = Sys.readdir ".ogit/logs" in (*On récupère les logs*)

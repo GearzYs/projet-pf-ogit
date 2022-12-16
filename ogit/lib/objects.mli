@@ -37,8 +37,3 @@ val merge_work_directory_I : t -> bool
 
 (** met à jour repo/ en appliquant la règle Merge 2 **)
 val merge_work_directory_II : t -> bool
-
-(*
-(* Fait un graph à la manière de git log --graph *)
-val log_graph : unit -> string list array
-*)

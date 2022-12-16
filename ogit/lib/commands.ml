@@ -48,20 +48,23 @@ let ogit_checkout _hash =
     in Logs.set_head [Digest.from_hex hashtemp]
   else failwith "Hash inconnu"
 
-let ogit_log () = 
-  let rec aux hd result = 
-    if hd = [] then ()
-    else
-      try 
-        let commit = Logs.read_commit (List.hd hd) in
-        aux (commit.parents) (["commit " ^ Digest.to_hex(List.hd hd) ^ " " ^ commit.message]@result)
-      with _ ->
-        let rec aux2 l2 = match l2 with
-          | [] -> ()
-          | h::t -> begin Printf.printf "%s\n" h; aux2 t end
-        in aux2 (result)
-  in aux (Logs.get_head ()) []
-  
+let ogit_log () =
+  let result = ref [] in
+  let rec head = function
+    | [] -> List.iter (Printf.printf "%s\n") !result
+    | h::t -> let rec pparents = function
+                | [] -> ()
+                | h::t ->   
+                try let actualCommit = Logs.read_commit h in 
+              result := [Digest.to_hex h ^ " " ^ actualCommit.message] @ (!result);
+              pparents actualCommit.parents;
+                with _ ->
+                result := ["d41d8cd98f00b204e9800998ecf8427e Initial commit"] @ (!result);
+                pparents t
+              in pparents [h];
+      head t
+  in head (Logs.get_head ())
+
 let ogit_merge _hash = 
     let hashtemp = Digest.from_hex (better_hash _hash) in
     (*List.iter (check_parent hashtemp) (Logs.get_head ());
@@ -81,3 +84,59 @@ let ogit_merge_II _hash =
       if Objects.merge_work_directory_II (Objects.read_directory_object actualCommit.content) then
         ogit_commit ("Merge de " ^ (Digest.to_hex hashtemp)) (*Message du commit = Merge de <son hash>*)
       else failwith "Merge impossible"
+      
+
+let ogit_log_graph () = (*do a graph like this : *)
+(*
+*   4a904d7 : initial commit
+|\  
+* | 81a3e0d : updated packfile code to recognize index v2
+| *   dfeffce : Appropriate time-zone test fix from halorgium
+| |\  
+| * | c615d80 : fixed a log issue
+| | * 23f4ecf : Clarify how to get a full count out of Repo#commits
+| |/  
+| *   9d6d250 : merge in bryces changes and fixed some testing issues
+|/
+*   e1e8989 : merge in master branch
+*)
+(*
+open Ogitlib;;
+Sys.chdir "../repo";;
+Commands.ogit_log_graph ();;   
+*)
+    let rec repeatString s n =
+      if n = 0 then "" else s ^ repeatString s (n - 1) in
+    let result = ref [] in
+    let temp = ref 0 in
+    let rec head = function
+      | [] -> List.iter (Printf.printf "%s\n") !result
+      | h::t -> let rec pparents = function
+                  | [] -> ()
+                  | h::t ->   
+                  try let actualCommit = Logs.read_commit h in 
+                    if (List.length t)+1 < !temp then
+                      begin
+                    result:= [(repeatString "| " (!temp-1))^"* "^(String.sub (Digest.to_hex h) 0 7)^ " : " ^actualCommit.message]@ !result;
+                    result:= [(repeatString "| " (!temp-2))^"|\\"] @ !result;
+                    temp:= (List.length t)+1;
+                    pparents actualCommit.parents;
+                      end
+                    else if (List.length t)+1 > !temp then
+                      begin
+                    result:= [(repeatString "| " (!temp))^"* "^(String.sub (Digest.to_hex h) 0 7)^ " : " ^actualCommit.message]@ !result;
+                    result:= [(repeatString "| " (!temp))^"|/"] @ !result;
+                    temp:= (List.length t)+1;
+                    pparents actualCommit.parents;
+                      end
+                  else begin 
+                    result:= [(repeatString "| " (!temp-1))^"* "^(String.sub (Digest.to_hex h) 0 7)^ " : " ^actualCommit.message]@ !result;
+                    pparents actualCommit.parents;
+                  end
+                  with _ ->
+                    result:= [("* d41d8cd : Initial commit")]@ !result;
+                    pparents t
+                in pparents [h];
+        head t
+    in head (Logs.get_head ())
+    

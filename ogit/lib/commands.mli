@@ -27,3 +27,5 @@ val ogit_merge : string -> unit
 (** Utilise mergeII **)
 val ogit_merge_II : string -> unit
 
+(** affiche les information concernant tous les commit ancètre de l'état actuel, du plus ancien au plus récent en pretty print **)
+val ogit_log_graph : unit -> unit
