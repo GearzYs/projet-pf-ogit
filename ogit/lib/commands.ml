@@ -11,23 +11,25 @@ let ogit_init () =
   let _ = Logs.set_head([Logs.store_commit(Logs.init_commit ())]) in ()
   end
 
-let ogit_commit _msg = 
-  let tmp = Logs.make_commit _msg (Digest.to_hex(Objects.store_work_directory ())) in
-  if (List.length (Logs.get_head()))>1 then
-    let getFiles =
-      let rec files res aux chem= match aux with
-        | [] -> res
-        | hd::tl -> if (Sys.is_directory (Filename.concat chem hd)) then
-          res@(files [] (Array.to_list (Sys.readdir (chem ^ hd ^ "/"))) (chem ^ hd ^ "/")) 
-        else files (hd::res) tl chem
-      in files [] (Array.to_list (Sys.readdir "./")) "./" in
-    let rec parcoursFiles = function
-      | [] -> Logs.set_head [(Logs.store_commit tmp)]
-      | hd::tl -> if ((Filename.check_suffix hd "..cl")||(Filename.check_suffix hd "..cr")) then
-        failwith "Conflict files detected, fix them before commiting"
-      else parcoursFiles tl
-    in parcoursFiles getFiles;
-  else Logs.set_head [(Logs.store_commit tmp)]
+let ogit_commit _msg =
+  if (Sys.file_exists ".ogit") then
+    let tmp = Logs.make_commit _msg (Digest.to_hex(Objects.store_work_directory ())) in
+    if (List.length (Logs.get_head()))>1 then
+      let getFiles =
+        let rec files res aux chem= match aux with
+          | [] -> res
+          | hd::tl -> if (Sys.is_directory (Filename.concat chem hd)) then
+            res@(files [] (Array.to_list (Sys.readdir (chem ^ hd ^ "/"))) (chem ^ hd ^ "/")) 
+          else files (hd::res) tl chem
+        in files [] (Array.to_list (Sys.readdir "./")) "./" in
+      let rec parcoursFiles = function
+        | [] -> Logs.set_head [(Logs.store_commit tmp)]
+        | hd::tl -> if ((Filename.check_suffix hd "..cl")||(Filename.check_suffix hd "..cr")) then
+          failwith "Conflict files detected, fix them before commiting"
+        else parcoursFiles tl
+      in parcoursFiles getFiles;
+    else Logs.set_head [(Logs.store_commit tmp)]
+  else failwith "No .ogit found. Hint: Try ogit init"
 
 let better_hash _hash =
   let len = String.length _hash in

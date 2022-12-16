@@ -22,24 +22,26 @@ let is_known _h =
     (*On va vérifier si le fichier existe, on se base sur le nom hash*)
     Sys.file_exists (".ogit/objects/" ^ (Digest.to_hex _h ))
 
+let write_to_file path msg =
+  let oc = open_out path in
+  Printf.fprintf oc "%s" msg;
+  close_out oc
+
 let store_object _obj = (*On va stocker l'objet dans le dossier .ogit/objects*)
   match _obj with
-  | Text txt -> begin 
+  | Text txt -> begin
     (*On execute 2 commandes : Touch "hash de l'obj" + Echo du fichier dont la sortie standart est le fichier qu'on a crée*)
-    let err = Sys.command ("cd .ogit/objects && printf \"%s\" \"" ^ txt ^ "\"> " ^(Digest.to_hex (hash _obj))) in
-    if err <> 0 then failwith "erreur (Hint:Avez vous pensé à faire Ogit init)" else (*Si il y a une erreur, le retour de la commande sera différent de 0*)
+    write_to_file (".ogit/objects/"^(Digest.to_hex (hash _obj))) txt;
     Digest.string txt
   end
   | Directory dir -> match dir with
     |[] -> begin (*Si dir vide*)
       let tmp = Digest.to_hex (Digest.string "") in
-      let err = Sys.command ("cd .ogit/objects && touch " ^ tmp) in
-      if err <> 0 then failwith "erreur (Hint:Avez vous pensé à faire Ogit init)" else
+      write_to_file (".ogit/objects/" ^ tmp) "";
       Digest.string ""
       end
     | _ -> begin (*Si dir non vide*)
-      let err = Sys.command ("cd .ogit/objects && printf \"%s\" \"" ^ (String.trim(String.concat "\n" (hashDir _obj))) ^ "\" > " ^ (Digest.to_hex (hash _obj))) in
-      if err <> 0 then failwith "erreur (Hint:Avez vous pensé à faire Ogit init)" else
+      write_to_file (".ogit/objects/" ^ (Digest.to_hex (hash _obj))) (String.concat "\n" (hashDir _obj));
       hash _obj
     end
 
@@ -133,11 +135,6 @@ let restore_work_directory _obj =
         loop tl chem
       end
   in loop (match _obj with | Directory dir -> dir | _ -> failwith "not a directory") "./"
-
-let write_to_file path msg = 
-  let err = Sys.command("printf \"%s\" \"" ^ msg ^ "\" > " ^ path) in
-  if err <> 0 then failwith "erreur" else
-  ();;
 
 let merge_work_directory_I _obj =
   let isConflict = ref true in
