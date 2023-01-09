@@ -14,7 +14,7 @@ type commit = {
 }
 
 (** la date au format HH:MM:SS-JJ/MM/AAAA
-    ex: 16:08:40-07/11/2022 *)
+    ex: 16:08:40-07/11/2022   kkkk *)
 val date_fm : float -> string
 
 (** met à jour le fichier .ogit/HEAD *)
